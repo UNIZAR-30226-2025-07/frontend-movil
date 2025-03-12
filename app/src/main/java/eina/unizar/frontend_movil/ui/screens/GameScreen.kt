@@ -1,4 +1,4 @@
-package eina.unizar.ui.screens
+package eina.unizar.frontend_movil.ui.screens
 
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
