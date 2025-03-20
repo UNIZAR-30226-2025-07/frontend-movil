@@ -1,186 +1,167 @@
-package eina.unizar.frontend_movil.ui.screens
-
-import androidx.compose.foundation.background
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
-import eina.unizar.frontend_movil.ui.theme.*
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.Image
-import androidx.compose.ui.res.painterResource
+import androidx.navigation.ActivityNavigator
 import eina.unizar.frontend_movil.R
+import androidx.navigation.NavController
 
-@Composable
-fun MenuButton(
-    text: String,
-    icon: @Composable () -> Unit,
-    onClick: () -> Unit
-) {
-    Button(
-        onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .padding(horizontal = 32.dp, vertical = 8.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = CardGray.copy(alpha = 0.3f)
-        ),
-        shape = RoundedCornerShape(12.dp)
-    ) {
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            icon()
-            Text(
-                text = text,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
-}
 
 @Composable
 fun MainMenuScreen(navController: NavController) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PurpleBackground)
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFF282032)
     ) {
-        // Contenedor para el logo y el botón de jugar
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(32.dp)
-        ) {
-            // Logo
-            Image(
-                painter = painterResource(id = R.drawable.galaxy),
-                contentDescription = "Galaxy Logo",
-                modifier = Modifier.size(200.dp)
+        // Animación infinita para interpolar el color de fondo del botón "JUGAR"
+        val infiniteTransition = rememberInfiniteTransition()
+        val progress by infiniteTransition.animateFloat(
+            initialValue = 0f,
+            targetValue = 1f,
+            animationSpec = infiniteRepeatable(
+                animation = tween(durationMillis = 6000, easing = LinearEasing)
             )
+        )
 
-            // Botón de jugar
-            Button(
-                onClick = { navController.navigate("game") },
+        // Definimos los tres colores con un toque espacial y galáctico
+        val cosmicPurple = Color(0xFF7209B7)  // Púrpura intenso
+        val cosmicBlue = Color(0xFF3F37C9)    // Azul profundo
+        val cosmicPink = Color(0xFFF72585)    // Rosa/Magenta vibrante
+
+        // Interpolación de colores según el valor de progress
+        val animatedColor = when {
+            progress < 0.33f -> lerp(cosmicPurple, cosmicBlue, progress / 0.33f)
+            progress < 0.66f -> lerp(cosmicBlue, cosmicPink, (progress - 0.33f) / 0.33f)
+            else -> lerp(cosmicPink, cosmicPurple, (progress - 0.66f) / 0.34f)
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            // Columna con los demás elementos (posición superior)
+            Column(
                 modifier = Modifier
-                    .width(200.dp)
-                    .height(80.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f)),
-                shape = RoundedCornerShape(12.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.TopCenter)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                // Icono de jugador y barra de progreso
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.PlayArrow,
-                        contentDescription = "Jugar",
-                        modifier = Modifier.size(32.dp)
+                    Image(
+                        painter = painterResource(id = R.drawable.user),
+                        contentDescription = "Icono",
+                        modifier = Modifier.width(40.dp)
+                            .height(40.dp)
                     )
-                    Text(
-                        text = "JUGAR",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold
+                    Spacer(modifier = Modifier.width(16.dp))
+                    LinearProgressIndicator(
+                        progress = 0.7f,
+                        modifier = Modifier.height(8.dp)
                     )
                 }
-            }
-        }
 
-        // Configuración en la esquina superior izquierda
-        Button(
-            onClick = { navController.navigate("settings") },
-            colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f)),
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(top = 16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Settings,
-                    contentDescription = "Configuración",
-                    modifier = Modifier.size(20.dp)
-                )
-                Text("CONFIGURACIÓN")
+                // Columna que contiene dos filas con dos iconos cada una
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Primera fila: Configuración (izquierda) y Amigos (derecha)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Botón de Configuración (Ajustes) usando un ícono PNG
+                        Button(
+                            onClick = { navController.navigate("settings") },  // Navegar a la pantalla de configuración
+                            modifier = Modifier
+                                .height(60.dp)
+                                .width(90.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.ajustes),
+                                contentDescription = "Ajustes",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        // Botón de Amigos usando un ícono PNG
+                        Button(
+                            onClick = { navController.navigate("friends") },  // Navegar a la pantalla de amigos
+                            modifier = Modifier
+                                .height(60.dp)
+                                .width(90.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.personas),
+                                contentDescription = "Amigos",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                    // Segunda fila: Tienda (izquierda) y Logros (derecha)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Botón de Tienda usando un ícono PNG
+                        Button(
+                            onClick = { navController.navigate("store") },  // Navegar a la pantalla de tienda
+                            modifier = Modifier
+                                .height(60.dp)
+                                .width(90.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.carrito),
+                                contentDescription = "Tienda",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                        // Botón de Logros usando un ícono PNG
+                        Button(
+                            onClick = { navController.navigate("achievements") },  // Navegar a la pantalla de logros
+                            modifier = Modifier
+                                .height(60.dp)
+                                .width(90.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.medalla),
+                                contentDescription = "Logros",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+                }
             }
-        }
 
-        // Logros y amigos en la esquina superior derecha
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = 16.dp)
-        ) {
+            // Botón de JUGAR con animación de fondo, posicionado a la esquina inferior derecha
             Button(
-                onClick = { navController.navigate("achievements") },
-                colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f))
+                onClick = { navController.navigate("game") },  // Navegar a la pantalla de juego
+                colors = ButtonDefaults.buttonColors(backgroundColor = animatedColor),
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(end = 16.dp, bottom = 16.dp)
+                    .height(80.dp)
+                    .width(240.dp)
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Star,
-                        contentDescription = "Logros",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text("LOGROS")
-                }
-            }
-            Button(
-                onClick = { navController.navigate("friends") },
-                colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f))
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Amigos",
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text("AMIGOS")
-                }
-            }
-        }
-
-        // Tienda en la esquina inferior derecha
-        Button(
-            onClick = { navController.navigate("store") },
-            colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f)),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(bottom = 16.dp)
-        ) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = "Tienda",
-                    modifier = Modifier.size(20.dp)
-                )
-                Text("TIENDA")
+                Text("JUGAR", color = Color.White)
             }
         }
     }
