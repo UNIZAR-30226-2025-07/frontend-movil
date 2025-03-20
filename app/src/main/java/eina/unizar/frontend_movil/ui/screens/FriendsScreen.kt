@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eina.unizar.frontend_movil.ui.theme.*
 import androidx.navigation.NavController
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 
 @Composable
 fun FriendItem(
@@ -71,76 +73,103 @@ fun FriendItem(
 fun FriendsScreen(navController: NavController) {
     var showFriendRequests by remember { mutableStateOf(false) }
     
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .background(PurpleBackground)
             .padding(16.dp)
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "AMIGOS",
-            fontSize = 40.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextWhite,
-            modifier = Modifier.padding(vertical = 24.dp)
-        )
-
-        // Fila de botones
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
-            verticalAlignment = Alignment.CenterVertically
+        // Columna izquierda para el título y los botones
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Botón de Solicitudes
-            Button(
-                onClick = { navController.navigate("friend_requests") },
-                colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f)),
-                modifier = Modifier.padding(end = 8.dp)
+            Text(
+                text = "AMIGOS",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite,
+                modifier = Modifier.padding(vertical = 24.dp)
+            )
+
+            // Fila de botones
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                // Botón de Solicitudes
+                Button(
+                    onClick = { navController.navigate("friend_requests") },
+                    colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f)),
+                    modifier = Modifier.padding(end = 8.dp)
                 ) {
-                    Text("Solicitudes")
-                    Badge {
-                        Text("3")
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Solicitudes")
+                        Badge {
+                            Text("3")
+                        }
+                    }
+                }
+
+                // Botón de Añadir amigos
+                Button(
+                    onClick = { navController.navigate("add_friend") },
+                    colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f))
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Añadir amigo",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text("AÑADIR AMIGO")
                     }
                 }
             }
-
-            // Botón de Añadir amigos
-            Button(
-                onClick = { /* TODO: Implementar añadir amigos */ },
-                colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f))
-            ) {
-                Text("Añadir amigos")
-            }
         }
 
-        // Título de la lista
-        Text(
-            text = "Lista de amigos",
-            color = TextWhite,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
+        // Columna derecha para la lista de amigos
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            // Título de la lista
+            Text(
+                text = "Lista de amigos",
+                color = TextWhite,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(vertical = 16.dp)
+            )
 
-        // Lista de amigos
-        LazyColumn {
-            items(
-                listOf(
-                    "Hector" to "en línea hace 5 horas",
-                    "David" to "en línea hace 8 horas",
-                    "Daniel" to "en línea hace 9 horas",
-                    "Hugo" to "en línea hace 13 horas"
-                )
-            ) { (name, lastSeen) ->
-                FriendItem(
-                    name = name,
-                    lastSeen = lastSeen,
-                    onRemove = { /* TODO: Implementar eliminar amigo */ }
-                )
+            // Lista de amigos
+            LazyColumn {
+                items(
+                    listOf(
+                        "Hector" to "en línea hace 5 horas",
+                        "David" to "en línea hace 8 horas",
+                        "Daniel" to "en línea hace 9 horas",
+                        "Hugo" to "en línea hace 13 horas"
+                    )
+                ) { (name, lastSeen) ->
+                    FriendItem(
+                        name = name,
+                        lastSeen = lastSeen,
+                        onRemove = { /* TODO: Implementar eliminar amigo */ }
+                    )
+                }
             }
         }
     }
