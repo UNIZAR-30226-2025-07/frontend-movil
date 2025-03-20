@@ -14,6 +14,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eina.unizar.frontend_movil.ui.theme.*
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
+data class AchievementData(
+    val title: String,
+    val isCompleted: Boolean,
+    val progress: String = "",
+    val xpReward: String = ""
+)
 
 @Composable
 fun AchievementItem(
@@ -83,37 +94,55 @@ fun AchievementItem(
 
 @Composable
 fun AchievementsScreen() {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .background(PurpleBackground)
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(16.dp)
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "LOGROS",
-            fontSize = 40.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextWhite,
-            modifier = Modifier.padding(vertical = 32.dp)
+        // Columna izquierda para el título
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "LOGROS",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite,
+                modifier = Modifier.padding(vertical = 32.dp)
+            )
+        }
+
+        // Columna derecha para los logros
+        val achievements = listOf(
+            AchievementData("Elimina a 50 jugadores", true, "+ 50 Xp"),
+            AchievementData("Juega 100 partidas", false, "(23/100)"),
+            AchievementData("Llega hasta el nivel 10", false, "(7/10)"),
+            AchievementData("Gana 10 partidas consecutivas", false, "(5/10)"),
+            AchievementData("Completa el tutorial", true, "+ 20 Xp"),
+            AchievementData("Desbloquea todos los personajes", false, "(3/5)"),
+            AchievementData("Alcanza el nivel 20", false, "(15/20)"),
+            AchievementData("Juega durante 10 horas", false, "(7/10)")
         )
 
-        AchievementItem(
-            title = "Elimina a 50 jugadores",
-            isCompleted = true,
-            xpReward = "+ 50 Xp"
-        )
-
-        AchievementItem(
-            title = "Juega 100 partidas",
-            progress = "(23/100)",
-            isCompleted = false
-        )
-
-        AchievementItem(
-            title = "Llega hasta el nivel 10",
-            progress = "(7/10)",
-            isCompleted = false
-        )
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            items(achievements) { achievement ->
+                AchievementItem(
+                    title = achievement.title,
+                    isCompleted = achievement.isCompleted,
+                    progress = achievement.progress,
+                    xpReward = achievement.xpReward
+                )
+            }
+        }
     }
 }

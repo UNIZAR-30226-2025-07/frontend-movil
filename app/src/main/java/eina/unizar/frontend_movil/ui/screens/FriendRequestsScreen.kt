@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import eina.unizar.frontend_movil.ui.theme.*
 import androidx.navigation.NavController
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 @Composable
 fun FriendRequestItem(
@@ -71,43 +73,60 @@ fun FriendRequestItem(
 
 @Composable
 fun FriendRequestsScreen(navController: NavController) {
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxSize()
             .background(PurpleBackground)
             .padding(16.dp)
+            .horizontalScroll(rememberScrollState()),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text(
-            text = "SOLICITUDES\nDE AMISTAD",
-            fontSize = 40.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextWhite,
-            lineHeight = 45.sp,
-            modifier = Modifier.padding(vertical = 24.dp)
-        )
+        // Columna izquierda para el título
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "SOLICITUDES\nDE AMISTAD",
+                fontSize = 40.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextWhite,
+                lineHeight = 45.sp,
+                modifier = Modifier.padding(vertical = 24.dp)
+            )
+        }
 
-        Text(
-            text = "Lista de solicitudes",
-            color = TextWhite,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
+        // Columna derecha para la lista de solicitudes
+        Column(
+            modifier = Modifier.weight(1f),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text(
+                text = "Lista de solicitudes",
+                color = TextWhite,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-        LazyColumn {
-            items(
-                listOf(
-                    "Hector" to "hace 5 horas",
-                    "David" to "hace 8 horas",
-                    "Daniel" to "hace 9 horas",
-                    "Hugo" to "hace 13 horas"
-                )
-            ) { (name, time) ->
-                FriendRequestItem(
-                    name = name,
-                    time = time,
-                    onAccept = { /* TODO: Implementar aceptar solicitud */ }
-                )
+            LazyColumn {
+                items(
+                    listOf(
+                        "Hector" to "hace 5 horas",
+                        "David" to "hace 8 horas",
+                        "Daniel" to "hace 9 horas",
+                        "Hugo" to "hace 13 horas"
+                    )
+                ) { (name, time) ->
+                    FriendRequestItem(
+                        name = name,
+                        time = time,
+                        onAccept = { /* TODO: Implementar aceptar solicitud */ }
+                    )
+                }
             }
         }
     }

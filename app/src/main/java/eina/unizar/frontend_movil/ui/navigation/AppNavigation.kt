@@ -23,6 +23,9 @@ fun AppNavigation() {
         composable("friend_requests") {
             FriendRequestsScreen(navController)
         }
+        composable("add_friend") {
+            AddFriendScreen(navController)
+        }
         composable("achievements") {
             AchievementsScreen()
         }

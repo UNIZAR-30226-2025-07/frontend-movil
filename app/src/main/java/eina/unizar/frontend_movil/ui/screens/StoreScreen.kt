@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.sp
 import eina.unizar.frontend_movil.R
 import eina.unizar.frontend_movil.ui.theme.*
 import androidx.navigation.NavController
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 
 data class SkinItem(
     val id: Int,
@@ -102,28 +106,38 @@ fun StoreScreen(navController: NavController) {
         SkinItem(6, "Black Hole", "5.99 €", R.drawable.skin_blackhole)
     )
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(PurpleBackground)
             .padding(16.dp)
     ) {
+        // Título centrado en la mitad izquierda
         Text(
             text = "TIENDA",
-            fontSize = 40.sp,
+            fontSize = 32.sp,
             fontWeight = FontWeight.Bold,
             color = TextWhite,
-            modifier = Modifier.padding(vertical = 24.dp)
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .padding(start = 32.dp)
         )
 
+        // Grid de objetos a la derecha
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
-            contentPadding = PaddingValues(8.dp)
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .fillMaxHeight()
+                .width(600.dp)
+                .padding(top = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(skins) { skin ->
                 StoreItem(
                     skin = skin,
-                    onBuy = { /* TODO: Implementar compra */ }
+                    onBuy = { /* Implementar lógica de compra */ }
                 )
             }
         }
