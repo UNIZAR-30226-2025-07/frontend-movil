@@ -11,11 +11,12 @@ import eina.unizar.frontend_movil.ui.screens.*
 fun AppNavigation() {
     val navController = rememberNavController()
 
+    // Un solo NavHost para toda la navegación
     NavHost(navController = navController, startDestination = "main_menu") {
         composable("main_menu") {
             MainMenuScreen(navController)
         }
-        composable("login_screen"){
+        composable("login_screen") {
             LoginScreen(navController)
         }
         composable("game") {
@@ -39,10 +40,8 @@ fun AppNavigation() {
         composable("store") {
             StoreScreen(navController)
         }
-        composable("login") {
-            LoginScreen(navController)
+        composable("new_account") {
+            NewAccountScreen(navController)  // Asegúrate de tener esta pantalla configurada
         }
     }
 }
-
-
