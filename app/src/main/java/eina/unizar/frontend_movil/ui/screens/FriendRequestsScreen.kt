@@ -94,7 +94,9 @@ fun FriendRequestsScreen(navController: NavController) {
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
                 lineHeight = 45.sp,
-                modifier = Modifier.padding(vertical = 24.dp)
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
+                    .align(Alignment.CenterHorizontally)
             )
         }
 
