@@ -40,6 +40,8 @@ fun StoreItem(
     skin: SkinItem,
     onBuy: () -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -76,7 +78,7 @@ fun StoreItem(
 
             // Botón de compra
             Button(
-                onClick = onBuy,
+                onClick = { showDialog = true },
                 colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
             ) {
                 Row(
@@ -91,8 +93,43 @@ fun StoreItem(
                     Text(text = skin.price)
                 }
             }
+
+            // Popup de confirmación
+            if (showDialog) {
+                ConfirmPurchaseDialog(
+                    skinName = skin.name,
+                    onConfirm = {
+                        onBuy() // Lógica de compra
+                        showDialog = false
+                    },
+                    onCancel = { showDialog = false }
+                )
+            }
         }
     }
+}
+
+@Composable
+fun ConfirmPurchaseDialog(skinName: String, onConfirm: () -> Unit, onCancel: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = { onCancel() },
+        title = { Text(text = "Confirmar compra") },
+        text = { Text("¿Estás seguro de que quieres comprar la skin '$skinName'?") },
+        confirmButton = {
+            TextButton(
+                onClick = onConfirm
+            ) {
+                Text("Sí, comprar")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = onCancel
+            ) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable
@@ -142,4 +179,4 @@ fun StoreScreen(navController: NavController) {
             }
         }
     }
-} 
+}

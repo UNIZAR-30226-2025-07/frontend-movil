@@ -1,5 +1,6 @@
 package eina.unizar.frontend_movil.ui.navigation
 
+import MainMenuScreen
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,6 +14,9 @@ fun AppNavigation() {
     NavHost(navController = navController, startDestination = "main_menu") {
         composable("main_menu") {
             MainMenuScreen(navController)
+        }
+        composable("login_screen"){
+            LoginScreen(navController)
         }
         composable("game") {
             GameScreen(navController)

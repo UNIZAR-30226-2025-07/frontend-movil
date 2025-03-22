@@ -4,6 +4,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -16,10 +17,34 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.ActivityNavigator
-import eina.unizar.frontend_movil.R
 import androidx.navigation.NavController
+import eina.unizar.frontend_movil.R
 
+@Composable
+fun PlayerProgress(navController: NavController) {
+    // Icono de jugador y barra de progreso
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        // Icono clickable que lleva a LoginScreen
+        Image(
+            painter = painterResource(id = R.drawable.user),
+            contentDescription = "Icono",
+            modifier = Modifier
+                .width(40.dp)
+                .height(40.dp)
+                .clickable {
+                    navController.navigate("login_screen")  // Navega a LoginScreen
+                }
+        )
+        Spacer(modifier = Modifier.width(16.dp))
+        LinearProgressIndicator(
+            progress = 0.7f,
+            modifier = Modifier.height(8.dp)
+        )
+    }
+}
 
 @Composable
 fun MainMenuScreen(navController: NavController) {
@@ -58,31 +83,14 @@ fun MainMenuScreen(navController: NavController) {
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Icono de jugador y barra de progreso
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.user),
-                        contentDescription = "Icono",
-                        modifier = Modifier.width(40.dp)
-                            .height(40.dp)
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    LinearProgressIndicator(
-                        progress = 0.7f,
-                        modifier = Modifier.height(8.dp)
-                    )
-                }
-
+                PlayerProgress(navController) // Llamada a la función PlayerProgress
                 // Columna que contiene dos filas con dos iconos cada una
                 Column(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Primera fila: Configuración (izquierda) y Amigos (derecha)
+                    // Fila de botones (Configuración, Amigos, etc.)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,

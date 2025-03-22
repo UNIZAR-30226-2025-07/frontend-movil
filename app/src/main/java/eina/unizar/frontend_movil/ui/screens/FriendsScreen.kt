@@ -22,6 +22,9 @@ import androidx.navigation.NavController
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
 
+
+
+
 @Composable
 fun FriendItem(
     name: String,
@@ -72,7 +75,7 @@ fun FriendItem(
 @Composable
 fun FriendsScreen(navController: NavController) {
     var showFriendRequests by remember { mutableStateOf(false) }
-    
+
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -88,12 +91,15 @@ fun FriendsScreen(navController: NavController) {
             horizontalAlignment = Alignment.Start,
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
             Text(
                 text = "AMIGOS",
                 fontSize = 40.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
-                modifier = Modifier.padding(vertical = 24.dp)
+                modifier = Modifier
+                    .padding(vertical = 24.dp)
+                    .align(Alignment.CenterHorizontally)
             )
 
             // Fila de botones
@@ -174,3 +180,4 @@ fun FriendsScreen(navController: NavController) {
         }
     }
 }
+
