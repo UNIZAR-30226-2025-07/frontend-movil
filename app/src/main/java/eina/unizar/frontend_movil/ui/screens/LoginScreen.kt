@@ -3,6 +3,8 @@ package eina.unizar.frontend_movil.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,10 +30,12 @@ fun LoginScreen(navController: NavController) {
             .background(PurpleBackground)
             .padding(16.dp)
     ) {
+        // Usamos un Column envuelto en un verticalScroll para que los elementos sean desplazables
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()), // Permite el desplazamiento
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -40,7 +44,7 @@ fun LoginScreen(navController: NavController) {
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
-                modifier = Modifier.padding(bottom = 32.dp)
+                modifier = Modifier.padding(bottom = 16.dp)
             )
 
             // Tarjeta que contiene los campos de texto y el botón
@@ -95,7 +99,16 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
             }
-
+            Text(
+                text = "No tengo cuenta",
+                fontSize = 14.sp,
+                color = TextWhite.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .clickable {
+                        // Navegar a la pantalla de nueva cuenta
+                        navController.navigate("new_account")
+                    }
+            )
             // Link o texto para "Olvidé mi contraseña"
             Text(
                 text = "¿Olvidaste tu contraseña?",
