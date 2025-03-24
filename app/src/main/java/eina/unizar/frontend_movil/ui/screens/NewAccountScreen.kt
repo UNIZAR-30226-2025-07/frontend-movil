@@ -20,9 +20,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun NewAccountScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
 
     Box(
         modifier = Modifier
@@ -40,7 +41,7 @@ fun LoginScreen(navController: NavController) {
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
             Text(
-                text = "Iniciar Sesión",
+                text = "Crear Cuenta",
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
                 color = TextWhite,
@@ -67,7 +68,17 @@ fun LoginScreen(navController: NavController) {
                         shape = RoundedCornerShape(8.dp),
                         singleLine = true
                     )
-
+                    // Campo de Username
+                    OutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        label = { Text("Nombre de usuario") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        singleLine = true
+                    )
                     // Campo de Contraseña
                     OutlinedTextField(
                         value = password,
@@ -99,22 +110,14 @@ fun LoginScreen(navController: NavController) {
                     }
                 }
             }
-            Text(
-                text = "No tengo cuenta",
-                fontSize = 14.sp,
-                color = TextWhite.copy(alpha = 0.7f),
-                modifier = Modifier
-                    .clickable {
-                        // Navegar a la pantalla de nueva cuenta
-                        navController.navigate("new_account")
-                    }
-            )
+
             // Link o texto para "Olvidé mi contraseña"
             Text(
-                text = "¿Olvidaste tu contraseña?",
+                text = "Ya estoy registrado",
                 fontSize = 14.sp,
                 color = TextWhite.copy(alpha = 0.7f),
                 modifier = Modifier.clickable {
+                    navController.navigate("login_screen")
                     // Implementa la acción para recuperar la contraseña
                 }
             )
