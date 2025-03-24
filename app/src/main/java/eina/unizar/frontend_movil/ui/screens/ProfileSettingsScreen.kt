@@ -20,8 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun ProfileSettingsScreen(navController: NavController) {
-    var name by remember { mutableStateOf("Juan Pérez") }
-    var email by remember { mutableStateOf("juan.perez@example.com") }
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     Box(

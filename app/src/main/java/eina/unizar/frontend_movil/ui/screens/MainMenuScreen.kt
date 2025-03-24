@@ -156,6 +156,24 @@ fun MainMenuScreen(navController: NavController) {
                             )
                         }
                     }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { navController.navigate("profile_settings") },
+                            modifier = Modifier
+                                .height(60.dp)
+                                .width(90.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.user), // Asegúrate de tener este drawable
+                                contentDescription = "Perfil",
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
                 }
             }
 
