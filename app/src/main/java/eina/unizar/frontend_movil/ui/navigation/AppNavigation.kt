@@ -43,5 +43,8 @@ fun AppNavigation() {
         composable("new_account") {
             NewAccountScreen(navController)  // Asegúrate de tener esta pantalla configurada
         }
+        composable("profile_settings") {
+            ProfileSettingsScreen(navController)  // Asegúrate de tener esta pantalla configurada
+        }
     }
 }

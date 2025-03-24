@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,12 +18,17 @@ import androidx.navigation.NavController
 import eina.unizar.frontend_movil.ui.theme.PurpleBackground
 import eina.unizar.frontend_movil.ui.theme.TextWhite
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun ProfileSettingsScreen(navController: NavController) {
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    // Estados para mostrar u ocultar los campos
+    var showNameField by remember { mutableStateOf(false) }
+    var showEmailField by remember { mutableStateOf(false) }
+    var showPasswordField by remember { mutableStateOf(false) }
 
     Box(
         modifier = Modifier
@@ -33,7 +39,8 @@ fun ProfileSettingsScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()), // Permite el desplazamiento
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
@@ -53,52 +60,132 @@ fun ProfileSettingsScreen(navController: NavController) {
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    // Nombre
-                    OutlinedTextField(
-                        value = name,
-                        onValueChange = { name = it },
-                        label = { Text("Nombre") },
+
+                    // -------- Cambiar Nombre --------
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(vertical = 4.dp)
+                            .clickable { showNameField = !showNameField },
                         shape = RoundedCornerShape(8.dp),
-                        singleLine = true
-                    )
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF3F37C9)),
+                        //elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
 
-                    // Correo Electrónico
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text("Correo Electrónico") },
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Cambiar nombre de usuario",
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
+                    if (showNameField) {
+                        OutlinedTextField(
+                            value = name,
+                            onValueChange = { name = it },
+                            label = { Text("Nuevo nombre de usuario") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            singleLine = true
+                        )
+                    }
+
+                    // Cambiar correo electrónico
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(vertical = 4.dp)
+                            .clickable { showEmailField = !showEmailField },
                         shape = RoundedCornerShape(8.dp),
-                        singleLine = true
-                    )
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF3F37C9))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Cambiar correo electrónico",
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
 
-                    // Cambiar Contraseña
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Nueva Contraseña") },
-                        visualTransformation = PasswordVisualTransformation(),
+                    if (showEmailField) {
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { Text("Nuevo correo electrónico") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            singleLine = true
+                        )
+                    }
+
+                    // Cambiar contraseña
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 16.dp),
+                            .padding(vertical = 4.dp)
+                            .clickable { showPasswordField = !showPasswordField },
                         shape = RoundedCornerShape(8.dp),
-                        singleLine = true
-                    )
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF3F37C9))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(12.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Cambiar contraseña",
+                                color = Color.White,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium
+                            )
+                        }
+                    }
 
-                    // Guardar Cambios
+                    if (showPasswordField) {
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Nueva contraseña") },
+                            visualTransformation = PasswordVisualTransformation(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 16.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            singleLine = true
+                        )
+                    }
+
+                    // -------- Botón Guardar Cambios --------
                     Button(
-                        onClick = { /* TODO: Guardar cambios */ },
+                        onClick = {
+                            // Guardar cambios, opcionalmente cerrar los campos
+                            // showNameField = false; showEmailField = false; showPasswordField = false
+                        },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp)
                             .padding(top = 8.dp),
                         shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3F37C9))
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
                     ) {
                         Text(
                             text = "Guardar Cambios",
@@ -109,19 +196,26 @@ fun ProfileSettingsScreen(navController: NavController) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Cerrar Sesión
-                    Text(
-                        text = "Cerrar sesión",
-                        color = Color.Red.copy(alpha = 0.9f),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
+                    // -------- Cerrar Sesión --------
+                    Button(
+                        onClick = {
+                            // Acción para cerrar sesión
+                            // navController.navigate("login")
+                        },
                         modifier = Modifier
-                            .align(Alignment.CenterHorizontally)
-                            .clickable {
-                                // TODO: Acción para cerrar sesión
-                                // navController.navigate("login")
-                            }
-                    )
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .padding(top = 12.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD32F2F)) // Rojo fuerte
+                    ) {
+                        Text(
+                            text = "Cerrar sesión",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
                 }
             }
         }
