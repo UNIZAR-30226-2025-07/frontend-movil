@@ -180,4 +180,3 @@ fun FriendsScreen(navController: NavController) {
         }
     }
 }
-
