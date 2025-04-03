@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    id("kotlinx-serialization")
 }
 
 android {
@@ -70,4 +71,11 @@ dependencies {
     implementation("androidx.compose.ui:ui:1.5.0") // Jetpack Compose
     implementation("androidx.compose.material:material:1.5.0") // Material Design
     implementation("androidx.compose.ui:ui-tooling-preview:1.5.0") // Vista previa en Compose
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")  //Corrutinas
+    implementation("androidx.navigation:navigation-compose:2.7.4")
+    implementation("io.ktor:ktor-client-core:2.3.5")
+    implementation("io.ktor:ktor-client-android:2.3.5")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.5")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.5")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 }
