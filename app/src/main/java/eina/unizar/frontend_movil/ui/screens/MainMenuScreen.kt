@@ -156,7 +156,7 @@ fun MainMenuScreen(navController: NavController) {
                             )
                         }
                     }
-                    Row(
+                    /**Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.CenterVertically
@@ -173,7 +173,8 @@ fun MainMenuScreen(navController: NavController) {
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
-                    }
+
+                    }**/
                 }
             }
 
