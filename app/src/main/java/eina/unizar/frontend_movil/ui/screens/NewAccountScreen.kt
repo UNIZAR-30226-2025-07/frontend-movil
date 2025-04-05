@@ -18,12 +18,16 @@ import eina.unizar.frontend_movil.ui.theme.TextWhite
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun NewAccountScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -84,6 +88,19 @@ fun NewAccountScreen(navController: NavController) {
                         value = password,
                         onValueChange = { password = it },
                         label = { Text("Contraseña") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        singleLine = true
+                    )
+
+                    // Campo de Confirmar Contraseña
+                    OutlinedTextField(
+                        value = confirmPassword,
+                        onValueChange = { confirmPassword = it },
+                        label = { Text("Confirmar Contraseña") },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier
                             .fillMaxWidth()
