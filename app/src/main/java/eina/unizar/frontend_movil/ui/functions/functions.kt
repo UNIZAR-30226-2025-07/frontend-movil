@@ -21,7 +21,7 @@ import java.net.HttpURLConnection
 
 
 object functions {
-    const val BASE_URL = "https://10.0.2.2" //DUDA
+    const val BASE_URL = "http://10.0.2.2:3000" //DUDA
 
     suspend fun get(endpoint: String): String? = withContext(Dispatchers.IO) {
         try {

@@ -149,11 +149,9 @@ fun NewAccountScreen(navController: NavController) {
                         onClick = {coroutineScope.launch {
                             val registrationSuccess = registerUser(username, email, password, confirmPassword, context)
                             if (registrationSuccess) {
-                                // Si el registro es exitoso, redirigir a otra pantalla (ej. pantalla principal)
                                 navController.navigate("main_menu")
                                 Toast.makeText(context, "Cuenta creada con éxito", Toast.LENGTH_LONG).show()
                             } else {
-                                // Si hubo un error, mostramos un mensaje
                                 Toast.makeText(context, "Error al crear cuenta", Toast.LENGTH_LONG).show()
                             }
                         }},
@@ -195,26 +193,26 @@ suspend fun registerUser(username: String, email: String, password: String, conf
     }
 
     val jsonBody = JSONObject().apply {
-        put("nickname", username)
-        put("mail", email)
+        put("username", username)
+        put("email", email)
         put("password", password)
-        put("style_fav", "rock") // Ajusta según la lógica de la app
     }
 
     Log.d("RegisterRequest", "JSON enviado: $jsonBody")
 
     return try {
-        val response = functions.post("user/register", jsonBody)
+        val response = functions.post("auth/sign-up", jsonBody)
+        Log.d("ResponseLog", "Response: $response")
         if (response != null) {
             val jsonResponse = JSONObject(response)
             val message = jsonResponse.optString("message", "")
 
-            if (message.contains("registrado con éxito", ignoreCase = true)) {
+            if (message.contains("Usuario creado con éxito")) {
                 Log.d("RegisterSuccess", "Registro exitoso")
                 return true
             } else {
                 Log.e("RegisterError", "Error en el registro: $message")
-                Toast.makeText(context, "Ya existe un usuario con ese correo", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, "No se ha creado con exito", Toast.LENGTH_LONG).show()
                 return false
             }
         } else {
