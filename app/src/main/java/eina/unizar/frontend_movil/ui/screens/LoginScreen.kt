@@ -65,7 +65,14 @@ fun LoginScreen(navController: NavController) {
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
                         shape = RoundedCornerShape(8.dp),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,    // Texto en blanco cuando está seleccionado
+                            unfocusedTextColor = Color.White, // Texto en blanco siempre
+                            cursorColor = Color.White,        // Cursor en blanco
+                            focusedBorderColor = Color.White, // Borde al seleccionar
+                            unfocusedBorderColor = Color.Gray // Borde normal
+                        )
                     )
 
                     // Campo de Contraseña
@@ -78,7 +85,14 @@ fun LoginScreen(navController: NavController) {
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
                         shape = RoundedCornerShape(8.dp),
-                        singleLine = true
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedTextColor = Color.White,    // Texto en blanco cuando está seleccionado
+                            unfocusedTextColor = Color.White, // Texto en blanco siempre
+                            cursorColor = Color.White,        // Cursor en blanco
+                            focusedBorderColor = Color.White, // Borde al seleccionar
+                            unfocusedBorderColor = Color.Gray // Borde normal
+                        )
                     )
 
                     // Botón de Iniciar Sesión
