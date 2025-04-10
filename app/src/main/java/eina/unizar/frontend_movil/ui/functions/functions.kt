@@ -22,7 +22,6 @@ import java.net.HttpURLConnection
 
 object functions {
     const val BASE_URL = "http://10.0.2.2:3000" //DUDA
-
     suspend fun get(endpoint: String): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("$BASE_URL/$endpoint")
@@ -50,19 +49,27 @@ object functions {
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
 
-            // Escribir el JSONObject como JSON string usando toString()
             connection.outputStream.bufferedWriter().use {
-                it.write(jsonBody.toString())  // Usamos el método toString() de JSONObject para convertirlo a un String
+                it.write(jsonBody.toString())
             }
 
-            // Verificar el código de respuesta
-            if (connection.responseCode == HttpURLConnection.HTTP_OK || connection.responseCode == HttpURLConnection.HTTP_CREATED) {
-                return@withContext connection.inputStream.bufferedReader().readText()
-            } else null
+            return@withContext when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED -> {
+                    connection.inputStream.bufferedReader().readText()
+                }
+                HttpURLConnection.HTTP_UNAUTHORIZED -> {
+                    connection.errorStream.bufferedReader().readText()
+                }
+                else -> null
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
     }
-
+    /*fun hashPassword(password: String): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        val hashedBytes = digest.digest(password.toByteArray())
+        return hashedBytes.joinToString("") { "%02x".format(it) }
+    }*/
 }
