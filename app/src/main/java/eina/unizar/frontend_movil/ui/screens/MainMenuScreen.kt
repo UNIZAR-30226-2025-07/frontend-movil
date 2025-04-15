@@ -1,3 +1,5 @@
+import android.content.Context
+import android.util.Log
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
@@ -14,6 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,12 +25,13 @@ import eina.unizar.frontend_movil.R
 
 @Composable
 fun PlayerProgress(navController: NavController) {
-    // Icono de jugador y barra de progreso
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Icono clickable que lleva a LoginScreen
         Image(
             painter = painterResource(id = R.drawable.user),
             contentDescription = "Icono",
@@ -35,7 +39,13 @@ fun PlayerProgress(navController: NavController) {
                 .width(40.dp)
                 .height(40.dp)
                 .clickable {
-                    navController.navigate("login_screen")  // Navega a LoginScreen
+                    val accessToken = sharedPreferences.getString("access_token", null)
+                    Log.d("AccessToken", "Access Token: $accessToken")
+                    if (accessToken != null) {
+                        navController.navigate("profile_settings")
+                    } else {
+                        navController.navigate("login_screen")
+                    }
                 }
         )
         Spacer(modifier = Modifier.width(16.dp))
@@ -48,6 +58,20 @@ fun PlayerProgress(navController: NavController) {
 
 @Composable
 fun MainMenuScreen(navController: NavController) {
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+
+    // Función auxiliar para manejar la navegación con verificación de token
+    fun navigateWithAuth(route: String) {
+        val accessToken = sharedPreferences.getString("access_token", null)
+        Log.d("AccessToken", "Access Token: $accessToken")
+        if (accessToken != null) {
+            navController.navigate(route)
+        } else {
+            navController.navigate("login_screen")
+        }
+    }
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFF282032)
@@ -111,7 +135,7 @@ fun MainMenuScreen(navController: NavController) {
                         }
                         // Botón de Amigos usando un ícono PNG
                         Button(
-                            onClick = { navController.navigate("friends") },  // Navegar a la pantalla de amigos
+                            onClick = { navigateWithAuth("friends") },  // Navegar a la pantalla de amigos
                             modifier = Modifier
                                 .height(60.dp)
                                 .width(90.dp)
@@ -131,7 +155,7 @@ fun MainMenuScreen(navController: NavController) {
                     ) {
                         // Botón de Tienda usando un ícono PNG
                         Button(
-                            onClick = { navController.navigate("store") },  // Navegar a la pantalla de tienda
+                            onClick = { navigateWithAuth("store") },  // Navegar a la pantalla de tienda
                             modifier = Modifier
                                 .height(60.dp)
                                 .width(90.dp)
@@ -144,7 +168,7 @@ fun MainMenuScreen(navController: NavController) {
                         }
                         // Botón de Logros usando un ícono PNG
                         Button(
-                            onClick = { navController.navigate("achievements") },  // Navegar a la pantalla de logros
+                            onClick = { navigateWithAuth("achievements") },  // Navegar a la pantalla de logros
                             modifier = Modifier
                                 .height(60.dp)
                                 .width(90.dp)

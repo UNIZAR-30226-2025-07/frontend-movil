@@ -126,9 +126,14 @@ fun LoginScreen(navController: NavController) {
                                     if (response != null) {
                                         try {
                                             val jsonResponse = JSONObject(response)
+                                            val message = jsonResponse.optString("message", "Sesión iniciada con éxito autenticación")
                                             if (jsonResponse.has("accessToken")) {
-                                                // Login exitoso
-                                                val message = jsonResponse.optString("message", "Sesión iniciada con éxito autenticación")
+                                                val accessToken = jsonResponse.getString("accessToken")
+                                                context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+                                                    .edit()
+                                                    .putString("access_token", accessToken)
+                                                    .apply()
+
                                                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                                                 navController.navigate("main_menu") {
                                                     popUpTo("login_screen") { inclusive = true }
