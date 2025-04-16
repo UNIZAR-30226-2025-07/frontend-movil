@@ -1,5 +1,6 @@
 package eina.unizar.frontend_movil.ui.screens
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import eina.unizar.frontend_movil.ui.theme.PurpleBackground
 import eina.unizar.frontend_movil.ui.theme.TextWhite
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun ProfileSettingsScreen(navController: NavController) {
@@ -197,10 +199,19 @@ fun ProfileSettingsScreen(navController: NavController) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     // -------- Cerrar Sesión --------
+                    val context = LocalContext.current
                     Button(
                         onClick = {
-                            // Acción para cerrar sesión
-                            // navController.navigate("login")
+                            // Eliminar el token de acceso
+                            context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+                                .edit()
+                                .remove("access_token")
+                                .apply()
+
+                            // Navegar a la pantalla de login y limpiar la pila de navegación
+                            navController.navigate("main_menu") {
+                                popUpTo(0) { inclusive = true }
+                            }
                         },
                         modifier = Modifier
                             .fillMaxWidth()
