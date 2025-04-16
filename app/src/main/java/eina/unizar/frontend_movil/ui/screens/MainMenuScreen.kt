@@ -56,16 +56,39 @@ fun PlayerProgress(navController: NavController) {
     }
 }
 
+
 @Composable
 fun MainMenuScreen(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
 
-    // Función auxiliar para manejar la navegación con verificación de token
-    fun navigateWithAuth(route: String) {
+    fun checkTokenValidity(context: Context): Boolean {
+        val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
         val accessToken = sharedPreferences.getString("access_token", null)
-        Log.d("AccessToken", "Access Token: $accessToken")
-        if (accessToken != null) {
+
+        if (accessToken == null) {
+            return false
+        }
+
+        try {
+            val parts = accessToken.split(".")
+            val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE))
+            val jsonObject = org.json.JSONObject(payload)
+            val exp = jsonObject.optLong("exp", 0) * 1000
+
+            if (exp < System.currentTimeMillis()) {
+                sharedPreferences.edit().remove("access_token").apply()
+                return false
+            }
+            return true
+        } catch (e: Exception) {
+            sharedPreferences.edit().remove("access_token").apply()
+            return false
+        }
+    }
+
+    fun navigateWithAuth(route: String) {
+        if (checkTokenValidity(context)) {
             navController.navigate(route)
         } else {
             navController.navigate("login_screen")
