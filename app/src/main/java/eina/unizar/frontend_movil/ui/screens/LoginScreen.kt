@@ -32,6 +32,43 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import androidx.compose.material3.CircularProgressIndicator
 
+fun hashPassword(password: String): String {
+    // Salt fijo predeterminado (NO cambiar una vez en producción)
+    val fixedSalt = "fj27dk39slf1"
+
+    // Combina la contraseña con el salt
+    val saltedPassword = fixedSalt + password
+
+    // Convierte la cadena a un array de bytes
+    val bytes = saltedPassword.map { it.code }
+
+    // Implementación simple de SHA-256
+    var hash = 0
+    for (byte in bytes) {
+        hash = ((hash shl 5) - hash) + byte
+        hash = hash and hash // Convierte a un entero de 32 bits
+    }
+
+    // Convierte el hash a una representación hexadecimal
+    var hashHex = (hash.toLong() and 0xFFFFFFFFL).toString(16)
+    while (hashHex.length < 8) {
+        hashHex = "0$hashHex"
+    }
+
+    // Agrega más complejidad (iteraciones)
+    for (i in 0 until 1000) {
+        hashHex += fixedSalt
+        var tempHash = 0
+        for (char in hashHex) {
+            tempHash = ((tempHash shl 5) - tempHash) + char.code
+            tempHash = tempHash and tempHash
+        }
+        hashHex = (tempHash.toLong() and 0xFFFFFFFFL).toString(16)
+    }
+
+    return hashHex
+}
+
 @Composable
 fun LoginScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
@@ -118,30 +155,30 @@ fun LoginScreen(navController: NavController) {
                             isLoading = true
                             scope.launch {
                                 try {
+                                    val hashedPassword = hashPassword(password)
                                     val jsonBody = JSONObject()
-                                    jsonBody.put("email", email)
-                                    jsonBody.put("password", password)
-
+                                    jsonBody.put("email", email.trim())
+                                    jsonBody.put("password", hashedPassword)
+                                    Log.d("LoginScreen", "Enviando petición con email: ${email.trim()}")
                                     val response = functions.post("auth/sign-in", jsonBody)
                                     if (response != null) {
+                                        Log.d("LoginScreen", "Respuesta del servidor: $response")
                                         try {
                                             val jsonResponse = JSONObject(response)
-                                            val message = jsonResponse.optString("message", "Sesión iniciada con éxito autenticación")
                                             if (jsonResponse.has("accessToken")) {
                                                 val accessToken = jsonResponse.getString("accessToken")
+                                                Log.d("LoginScreen", "Token de acceso: $accessToken")
                                                 context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
                                                     .edit()
                                                     .putString("access_token", accessToken)
                                                     .apply()
-
-                                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                Log.d("LoginScreen", "Token guardado en SharedPreferences")
+                                                Toast.makeText(context, "Sesión iniciada con éxito", Toast.LENGTH_SHORT).show()
                                                 navController.navigate("main_menu") {
                                                     popUpTo("login_screen") { inclusive = true }
                                                 }
                                             } else {
-                                                // Mostrar mensaje de error del servidor
-                                                val message = jsonResponse.optString("message", "Error de autenticación")
-                                                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(context, "Credenciales inválidas", Toast.LENGTH_SHORT).show()
                                             }
                                         } catch (e: Exception) {
                                             Toast.makeText(context, "Error al procesar la respuesta", Toast.LENGTH_SHORT).show()

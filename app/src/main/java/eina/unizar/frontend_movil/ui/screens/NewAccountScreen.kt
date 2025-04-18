@@ -191,11 +191,11 @@ suspend fun registerUser(username: String, email: String, password: String, conf
         Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
         return false
     }
-
+    val hashedPassword = hashPassword(password)
     val jsonBody = JSONObject().apply {
         put("username", username)
         put("email", email)
-        put("password", password)
+        put("password", hashedPassword)
     }
 
     Log.d("RegisterRequest", "JSON enviado: $jsonBody")
