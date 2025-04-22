@@ -22,32 +22,98 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import eina.unizar.frontend_movil.R
+import android.content.SharedPreferences
+import eina.unizar.frontend_movil.ui.functions.functions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerProgress(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+    val TAG = "PlayerProgress"
+
+    var username by remember { mutableStateOf("Guest") }
+    var token by remember { mutableStateOf(sharedPreferences.getString("access_token", null)) }
+
+    suspend fun fetchUsername(userId: String): String {
+        return try {
+            val response = functions.get("main-screen/get-user/$userId")
+            if (response != null) {
+                val jsonObject = org.json.JSONObject(response)
+                jsonObject.optString("username", "Guest")
+            } else {
+                "Guest"
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error obteniendo username: ${e.message}")
+            "Guest"
+        }
+    }
+
+    fun extractUserId(token: String?): String? {
+        if (token == null) return null
+        return try {
+            val parts = token.split(".")
+            val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE))
+            val jsonObject = org.json.JSONObject(payload)
+            jsonObject.optString("id", null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error extrayendo userId: ${e.message}")
+            null
+        }
+    }
+
+    LaunchedEffect(token) {
+        val userId = extractUserId(token)
+        username = if (userId != null) {
+            fetchUsername(userId)
+        } else {
+            "Guest"
+        }
+    }
+
+    DisposableEffect(Unit) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == "access_token") {
+                token = sharedPreferences.getString("access_token", null)
+            }
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.user),
-            contentDescription = "Icono",
-            modifier = Modifier
-                .width(40.dp)
-                .height(40.dp)
-                .clickable {
-                    val accessToken = sharedPreferences.getString("access_token", null)
-                    Log.d("AccessToken", "Access Token: $accessToken")
-                    if (accessToken != null) {
-                        navController.navigate("profile_settings")
-                    } else {
-                        navController.navigate("login_screen")
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(40.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.user),
+                contentDescription = "Icono",
+                modifier = Modifier
+                    .size(40.dp)
+                    .clickable {
+                        if (sharedPreferences.getString("access_token", null) != null) {
+                            navController.navigate("profile_settings")
+                        } else {
+                            navController.navigate("login_screen")
+                        }
                     }
-                }
-        )
+            )
+            Text(
+                text = username,
+                color = Color.White,
+                fontSize = 12.sp,
+                modifier = Modifier.padding(top = 4.dp)
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         LinearProgressIndicator(
             progress = 0.7f,
