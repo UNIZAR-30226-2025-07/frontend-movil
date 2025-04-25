@@ -21,7 +21,7 @@ import java.net.HttpURLConnection
 
 
 object functions {
-    const val BASE_URL = "http://10.0.2.2:3000" //DUDA
+    const val BASE_URL = "http://galaxy.t2dc.es:3000" //DUDA
     suspend fun get(endpoint: String): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("$BASE_URL/$endpoint")
@@ -72,4 +72,28 @@ object functions {
         val hashedBytes = digest.digest(password.toByteArray())
         return hashedBytes.joinToString("") { "%02x".format(it) }
     }*/
+    suspend fun delete(endpoint: String, jsonBody: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("$BASE_URL/$endpoint")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "DELETE"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "application/json")
+
+            connection.outputStream.bufferedWriter().use {
+                it.write(jsonBody)
+            }
+
+            when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK -> {
+                    connection.inputStream.bufferedReader().readText()
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 }

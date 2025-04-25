@@ -4,6 +4,7 @@
     package="eina.unizar.frontend_movil">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -26,9 +27,9 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- El comentario puede quedarse, pero el intent-filter que estaba aquí debe eliminarse -->
     </application>
 </manifest>
