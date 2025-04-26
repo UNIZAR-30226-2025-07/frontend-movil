@@ -12,13 +12,11 @@ import androidx.compose.ui.unit.sp
 import eina.unizar.frontend_movil.ui.theme.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-
+import eina.unizar.frontend_movil.ui.utils.MusicManager
 @Composable
 fun SettingsScreen() {
     var gameVolume by remember { mutableStateOf(0.82f) }
-    var musicVolume by remember { mutableStateOf(0.38f) }
     var colorBlindMode by remember { mutableStateOf(true) }
-
     Row(
         modifier = Modifier
             .fillMaxSize()
@@ -90,30 +88,37 @@ fun SettingsScreen() {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     // Volumen de la música
-                    Text(
-                        text = "Volumen de la música",
-                        color = TextWhite,
-                        fontSize = 20.sp,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Column(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Slider(
-                            value = musicVolume,
-                            onValueChange = { musicVolume = it },
-                            modifier = Modifier.weight(1f),
-                            colors = SliderDefaults.colors(
-                                thumbColor = SliderBlue,
-                                activeTrackColor = SliderBlue
-                            )
-                        )
                         Text(
-                            text = "${(musicVolume * 100).toInt()}%",
+                            text = "Volumen de la música",
                             color = TextWhite,
-                            modifier = Modifier.padding(start = 8.dp)
+                            fontSize = 20.sp,
+                            modifier = Modifier.padding(bottom = 8.dp)
                         )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Slider(
+                                value = MusicManager.volume.value,
+                                onValueChange = { newValue ->
+                                    MusicManager.volume.value = newValue
+                                    MusicManager.mediaPlayer?.setVolume(newValue, newValue)
+                                },
+                                modifier = Modifier.weight(1f),
+                                colors = SliderDefaults.colors(
+                                    thumbColor = SliderBlue,
+                                    activeTrackColor = SliderBlue
+                                )
+                            )
+                            Text(
+                                text = "${(MusicManager.volume.value * 100).toInt()}%",
+                                color = TextWhite,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))

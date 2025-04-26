@@ -69,5 +69,11 @@ fun AppNavigation() {
         composable("profile_settings") {
             ProfileSettingsScreen(navController)  // Asegúrate de tener esta pantalla configurada
         }
+        composable("game") {
+            GameTypeSelectionScreen(navController)
+        }
+        composable("create-private-room") {
+            PrivateRoomScreen(navController)
+        }
     }
 }

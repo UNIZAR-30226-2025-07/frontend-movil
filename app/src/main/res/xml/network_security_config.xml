@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Configuración específica para el dominio -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.0.2.2</domain>  <!-- Permite tráfico HTTP a tu IP local -->
+        <domain includeSubdomains="true">galaxy.t2dc.es</domain>
     </domain-config>
 </network-security-config>
