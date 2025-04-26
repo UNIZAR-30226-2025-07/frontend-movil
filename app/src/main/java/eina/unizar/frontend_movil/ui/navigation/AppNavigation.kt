@@ -2,9 +2,11 @@ package eina.unizar.frontend_movil.ui.navigation
 
 import MainMenuScreen
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import eina.unizar.frontend_movil.ui.screens.*
 
 @Composable
@@ -24,6 +26,27 @@ fun AppNavigation() {
         }
         composable("friends") {
             FriendsScreen(navController)
+        }
+        composable("play") {
+            GameTypeSelectionScreen(navController)
+        }
+        composable("create-private-room") {
+            PrivateRoomScreen(navController)
+        }
+        composable("join-private-room") {
+            JoinPrivateRoomScreen(navController)
+        }
+        composable(
+            route = "waiting-room/{code}",
+            arguments = listOf(
+                navArgument("code") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+            val code = backStackEntry.arguments?.getString("code") ?: ""
+            WaitingRoomScreen(
+                navController = navController,
+                roomCode = code
+            )
         }
         composable("friend_requests") {
             FriendRequestsScreen(navController)

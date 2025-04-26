@@ -33,6 +33,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import eina.unizar.frontend_movil.ui.theme.*
@@ -50,107 +51,86 @@ fun GameTypeSelectionScreen(navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(PurpleBackground)
-            .padding(16.dp),
+            .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título
+        // Título compacto
         Text(
             text = "NUEVA PARTIDA",
-            fontSize = 40.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             color = TextWhite,
-            modifier = Modifier.padding(vertical = 32.dp)
+            modifier = Modifier.padding(vertical = 16.dp)
         )
 
-        // Tarjeta de selección
-        Card(
+        // Contenedor de botones ajustado
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            colors = CardDefaults.cardColors(containerColor = CardGray.copy(alpha = 0.2f)),
-            shape = RoundedCornerShape(16.dp)
+                .fillMaxWidth(0.9f)
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // Botón Partida Pública
-                Button(
-                    onClick = { navController.navigate("game") }, // Pantalla de juego directo
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = GreenMessage.copy(alpha = 0.8f)
-                    )
-                ) {
-                    Text(
-                        text = "PARTIDA PÚBLICA",
-                        color = TextWhite,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
+            // Botón Partida Pública
+            CompactGameButton(
+                text = "PÚBLICA",
+                icon = Icons.Default.PlayArrow,
+                onClick = { navController.navigate("game") },
+                color = GreenMessage.copy(alpha = 0.8f)
+            )
 
-                // Separador
-                /*Text(
-                    text = "o",
-                    color = TextWhite.copy(alpha = 0.5f),
-                    modifier = Modifier.padding(vertical = 16.dp)
-                )*/
+            // Botón Unirse a Sala
+            CompactGameButton(
+                text = "UNIRSE A SALA",
+                icon = Icons.Default.PlayArrow,
+                onClick = { navController.navigate("join-private-room") },
+                color = CardGray.copy(alpha = 0.4f)
+            )
 
-                // Botón Partida Privada
-                Button(
-                    onClick = { navController.navigate("create-private-room") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = CardGray.copy(alpha = 0.4f)
-                    )
-                ) {
-                    Text(
-                        text = "CREAR SALA PRIVADA",
-                        color = TextWhite,
-                        fontSize = 18.sp,
-                        modifier = Modifier.padding(8.dp)
-                    )
-                }
-            }
+            // Botón Crear Sala
+            CompactGameButton(
+                text = "CREAR SALA",
+                icon = Icons.Default.PlayArrow,
+                onClick = { navController.navigate("create-private-room") },
+                color = CardGray.copy(alpha = 0.4f)
+            )
         }
     }
 }
 
-// Pantalla temporal para crear sala privada
 @Composable
-fun CreatePrivateRoomScreen(navController: NavController) {
-    Column(
+private fun CompactGameButton(
+    text: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    color: Color
+) {
+    Button(
+        onClick = onClick,
         modifier = Modifier
-            .fillMaxSize()
-            .background(PurpleBackground)
-            .padding(16.dp)
+            .fillMaxWidth()
+            .heightIn(min = 48.dp, max = 56.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = color),
+        shape = RoundedCornerShape(10.dp)
     ) {
-        // Botón de volver
-        IconButton(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.padding(8.dp)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Volver",
-                tint = TextWhite
+                imageVector = icon,
+                contentDescription = null,
+                tint = TextWhite,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = text,
+                color = TextWhite,
+                fontSize = 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
-
-        // Contenido temporal
-        Text(
-            text = "CREAR SALA PRIVADA",
-            color = TextWhite,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .padding(vertical = 32.dp)
-                .align(Alignment.CenterHorizontally)
-        )
     }
 }

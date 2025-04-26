@@ -1,5 +1,7 @@
+// Añade este import para el icono de check
 package eina.unizar.frontend_movil.ui.screens
 
+import androidx.compose.material.icons.filled.Check
 import MainMenuScreen
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -17,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
@@ -49,15 +50,15 @@ import eina.unizar.frontend_movil.ui.viewmodel.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrivateRoomScreen(navController: NavController) {
-    // estados
-    val generatedCode = remember { generateRandomCode() }
-    val context = LocalContext.current
-    val scrollState = rememberScrollState()
-    
-    // Lista de jugadores de ejemplo (deberías obtenerla de tu ViewModel)
+fun WaitingRoomScreen(
+    navController: NavController,
+    roomCode: String?,
+    isHost: Boolean = false
+) {
+    var isReady by remember { mutableStateOf(false) }
     val players = remember {
         mutableStateListOf(
+            Player("Tú", isReady),  // Jugador actual
             Player("Daniel", true),
             Player("Hector", false),
             Player("David", true),
@@ -88,63 +89,25 @@ fun PrivateRoomScreen(navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
                 .padding(innerPadding)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            CreateRoomSection(
-                generatedCode = generatedCode,
-                players = players,
-                onCreate = { createPrivateRoom(generatedCode, navController) },
-                onCopyCode = { copyToClipboard(generatedCode, context) }
-            )
-        }
-    }
-}
-
-@Composable
-private fun CreateRoomSection(
-    generatedCode: String,
-    players: List<Player>,
-    onCreate: () -> Unit,
-    onCopyCode: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = CardGray.copy(alpha = 0.2f)),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Contador de jugadores
-            Text(
-                text = "${players.size}/8 JUGADORES",
-                color = TextWhite.copy(alpha = 0.8f),
-                fontSize = 16.sp,
-                modifier = Modifier.align(Alignment.Start)
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Código de sala
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Encabezado con estadísticas
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Text(
-                    text = generatedCode,
-                    color = TextWhite,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 4.sp
+                    text = "${players.size}/8 JUGADORES",
+                    color = TextWhite.copy(alpha = 0.8f),
+                    fontSize = 16.sp
                 )
-                IconButton(onClick = onCopyCode) {
-                    Icon(
-                        imageVector = Icons.Default.Share,
-                        contentDescription = "Copiar código",
-                        tint = TextWhite.copy(0.7f)
-                    )
-                }
+                Text(
+                    text = "${players.count { it.isReady }}/8 LISTOS",
+                    color = TextWhite.copy(alpha = 0.8f),
+                    fontSize = 16.sp
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -153,32 +116,43 @@ private fun CreateRoomSection(
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 200.dp)
+                    .weight(1f)
             ) {
                 items(
                     items = players,
                     key = { player -> player.hashCode() }
                 ) { player ->
-                    PlayerListItem(player = player)
+                    PlayerListItem(
+                        player = player,
+                        isCurrentUser = player.name == "Tú"
+                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
+            // Botón de estado listo
             Button(
-                onClick = onCreate,
+                onClick = {
+                    isReady = !isReady
+                    // Actualizar estado del jugador actual
+                    players[0] = players[0].copy(isReady = isReady)
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = CardGray.copy(alpha = 0.4f))
+                    containerColor = if (isReady) GreenMessage.copy(alpha = 0.8f) 
+                                   else CardGray.copy(alpha = 0.4f)
+                )
             ) {
-                Text("INICIAR PARTIDA", color = TextWhite)
+                Text(
+                    text = if (isReady) "LISTO ✓" else "MARCAR COMO LISTO",
+                    color = TextWhite
+                )
             }
         }
     }
 }
 
 @Composable
-fun PlayerListItem(player: Player) {
+fun PlayerListItem(player: Player, isCurrentUser: Boolean = false) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -196,12 +170,12 @@ fun PlayerListItem(player: Player) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = TextWhite
+                    tint = if (isCurrentUser) GreenMessage else TextWhite
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = player.name,
-                    color = TextWhite,
+                    color = if (isCurrentUser) GreenMessage else TextWhite,
                     fontSize = 16.sp
                 )
             }
@@ -216,30 +190,4 @@ fun PlayerListItem(player: Player) {
             }
         }
     }
-}
-
-
-// ————— Funciones auxiliares —————
-
-private fun generateRandomCode(): String {
-    val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-    return (1..6).map { chars.random() }.joinToString("")
-}
-
-private fun copyToClipboard(text: String, context: Context) {
-    val clipboard = ContextCompat.getSystemService(context, ClipboardManager::class.java)
-    clipboard?.setPrimaryClip(ClipData.newPlainText("Código sala", text))
-    Toast.makeText(context, "Código copiado", Toast.LENGTH_SHORT).show()
-}
-
-private fun joinPrivateRoom(code: String, navController: NavController) {
-    if (code.length == 6) {
-        navController.navigate("waiting-room/$code")
-    } else {
-        // Mostrar error
-    }
-}
-
-private fun createPrivateRoom(code: String, navController: NavController) {
-    navController.navigate("waiting-room/$code?host=true")
 }

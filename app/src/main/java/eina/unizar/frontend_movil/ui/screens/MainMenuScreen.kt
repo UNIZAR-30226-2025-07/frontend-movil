@@ -208,7 +208,7 @@ fun MainMenuScreen(navController: NavController) {
 
             // Botón de JUGAR con animación de fondo, posicionado a la esquina inferior derecha
             Button(
-                onClick = { navController.navigate("game") },  // Navegar a la pantalla de juego
+                onClick = { navController.navigate("play") },  // Navegar a la pantalla de juego
                 colors = ButtonDefaults.buttonColors(backgroundColor = animatedColor),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)

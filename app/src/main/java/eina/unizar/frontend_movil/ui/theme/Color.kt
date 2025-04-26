@@ -17,3 +17,4 @@ val TextWhite = Color.White
 val SliderBlue = Color(0xFF3F51B5)
 val DarkGreenCard = Color(0xFF1B5E20)
 val LightGreenCard = Color(0xFF4CAF50)
+val GreenMessage = Color(0xFF075E54)
