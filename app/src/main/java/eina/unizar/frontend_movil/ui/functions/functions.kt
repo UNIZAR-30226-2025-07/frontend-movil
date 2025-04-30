@@ -96,6 +96,7 @@ object functions {
         val hashedBytes = digest.digest(password.toByteArray())
         return hashedBytes.joinToString("") { "%02x".format(it) }
     }*/
+
     suspend fun delete(endpoint: String, jsonBody: String): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("$BASE_URL/$endpoint")
@@ -105,6 +106,14 @@ object functions {
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
 
+
+            // Escribimos el cuerpo JSON
+            connection.outputStream.bufferedWriter().use { it.write(jsonBody) }
+
+            return@withContext when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK -> connection.inputStream.bufferedReader().readText()
+                HttpURLConnection.HTTP_UNAUTHORIZED -> connection.errorStream.bufferedReader().readText()
+
             connection.outputStream.bufferedWriter().use {
                 it.write(jsonBody)
             }
@@ -113,6 +122,7 @@ object functions {
                 HttpURLConnection.HTTP_OK -> {
                     connection.inputStream.bufferedReader().readText()
                 }
+
                 else -> null
             }
         } catch (e: Exception) {
