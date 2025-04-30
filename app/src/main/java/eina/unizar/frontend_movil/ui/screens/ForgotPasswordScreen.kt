@@ -15,10 +15,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import eina.unizar.frontend_movil.ui.functions.functions
+import eina.unizar.frontend_movil.ui.functions.Functions
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import eina.unizar.frontend_movil.ui.screens.validatePassword
+
 @Composable
 fun ForgotPasswordScreen(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
@@ -280,7 +280,7 @@ suspend fun requestPasswordReset(email: String): Boolean {
         jsonObject.put("email", email)
 
         // Usamos el endpoint correcto según el script web
-        val response = functions.postWithBody(
+        val response = Functions.postWithBody(
             endpoint = "auth/forgot-password",
             body = jsonObject.toString()
         )
@@ -304,7 +304,7 @@ suspend fun resetPassword(email: String, code: String, newPassword: String): Boo
         jsonObject.put("newPassword", newPassword)
 
         // Ajustar el endpoint si es necesario según la API
-        val response = functions.postWithBody(
+        val response = Functions.postWithBody(
             endpoint = "auth/reset-password",
             body = jsonObject.toString()
         )

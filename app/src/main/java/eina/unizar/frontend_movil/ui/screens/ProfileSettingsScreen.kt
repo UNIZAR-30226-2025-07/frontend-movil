@@ -26,7 +26,7 @@ import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.util.Date
-import eina.unizar.frontend_movil.ui.functions.functions
+import eina.unizar.frontend_movil.ui.functions.Functions
 
 @Composable
 fun ProfileSettingsScreen(navController: NavController) {
@@ -386,7 +386,7 @@ suspend fun updateUserData(context: Context, userId: String, username: String, p
             "Auth" to (context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE).getString("access_token", "") ?: "")
         )
 
-        val response = functions.put(
+        val response = Functions.put(
             endpoint = "main-screen/update-user/$userId",
             body = jsonObject.toString(),
             headers = headers
@@ -411,7 +411,7 @@ suspend fun fetchUsername(userId: String, context: Context): String {
             "Auth" to (token ?: "")
         )
 
-        val response = functions.getWithHeaders("main-screen/get-user/$userId", headers)
+        val response = Functions.getWithHeaders("main-screen/get-user/$userId", headers)
         Log.d("ProfileSettings", "Respuesta: $response")
 
         if (response != null) {

@@ -6,7 +6,6 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.mutableStateListOf
 import eina.unizar.frontend_movil.ui.models.Friend
 import eina.unizar.frontend_movil.ui.functions.*
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 class FriendsViewModel : ViewModel() {
@@ -14,7 +13,7 @@ class FriendsViewModel : ViewModel() {
 
     fun loadFriends(userId: String) {  // Usamos String para que sea compatible con la API
         viewModelScope.launch {
-            val response = functions.get("friends/$userId")
+            val response = Functions.get("friends/$userId")
             response?.let {
                 try {
                     val friendsList = Json.decodeFromString<List<Friend>>(it)
@@ -30,7 +29,7 @@ class FriendsViewModel : ViewModel() {
 
     fun removeFriend(userId: String, friendId: String) {
         viewModelScope.launch {
-            val response = functions.delete("friends/$userId", """{"id": "$friendId"}""")
+            val response = Functions.delete("friends/$userId", """{"id": "$friendId"}""")
             if (response != null) {
                 // Aquí actualizas la lista de amigos después de la eliminación
                 loadFriends(userId)  // Recargar los amigos para que la lista se actualice

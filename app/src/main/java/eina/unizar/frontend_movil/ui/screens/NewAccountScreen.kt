@@ -22,10 +22,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import eina.unizar.frontend_movil.ui.functions.functions
+import eina.unizar.frontend_movil.ui.functions.Functions
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.slf4j.MDC.put
 
 @Composable
 fun NewAccountScreen(navController: NavController) {
@@ -209,7 +208,7 @@ suspend fun registerUser(username: String, email: String, password: String, conf
     Log.d("RegisterRequest", "JSON enviado: $jsonBody")
 
     return try {
-        val response = functions.post("auth/sign-up", jsonBody)
+        val response = Functions.post("auth/sign-up", jsonBody)
         Log.d("ResponseLog", "Response: $response")
         if (response != null) {
             val jsonResponse = JSONObject(response)

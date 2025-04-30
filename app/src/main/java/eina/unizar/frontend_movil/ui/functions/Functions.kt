@@ -1,29 +1,13 @@
 package eina.unizar.frontend_movil.ui.functions
 
-import android.content.Context
-import android.content.SharedPreferences
-import androidx.core.content.edit
-import io.ktor.client.*
-import io.ktor.client.engine.android.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.util.*
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.Json
-import java.security.MessageDigest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 import java.net.URL
 import java.net.HttpURLConnection
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 //import eina.unizar.frontend_movil.ui.utils.AuthInterceptor
-import okhttp3.logging.HttpLoggingInterceptor
 
-object functions {
+object Functions {
     const val BASE_URL = "http://galaxy.t2dc.es:3000"
 
 
@@ -106,23 +90,14 @@ object functions {
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
 
-
             // Escribimos el cuerpo JSON
-            connection.outputStream.bufferedWriter().use { it.write(jsonBody) }
-
-            return@withContext when (connection.responseCode) {
-                HttpURLConnection.HTTP_OK -> connection.inputStream.bufferedReader().readText()
-                HttpURLConnection.HTTP_UNAUTHORIZED -> connection.errorStream.bufferedReader().readText()
-
             connection.outputStream.bufferedWriter().use {
                 it.write(jsonBody)
             }
 
-            when (connection.responseCode) {
-                HttpURLConnection.HTTP_OK -> {
-                    connection.inputStream.bufferedReader().readText()
-                }
-
+            return@withContext when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK -> connection.inputStream.bufferedReader().readText()
+                HttpURLConnection.HTTP_UNAUTHORIZED -> connection.errorStream.bufferedReader().readText()
                 else -> null
             }
         } catch (e: Exception) {
