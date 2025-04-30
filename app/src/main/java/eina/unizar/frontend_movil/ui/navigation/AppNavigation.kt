@@ -52,5 +52,8 @@ fun AppNavigation() {
         composable("create-private-room") {
             PrivateRoomScreen(navController)
         }
+        composable("forgot_password") {
+            ForgotPasswordScreen(navController)
+        }
     }
 }
