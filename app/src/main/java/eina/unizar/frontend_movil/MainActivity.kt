@@ -8,12 +8,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import eina.unizar.frontend_movil.ui.navigation.AppNavigation
 import eina.unizar.frontend_movil.ui.utils.MusicManager
+//import eina.unizar.frontend_movil.ui.utils.TokenManager
 
 class MainActivity : ComponentActivity() {
     private var mediaPlayer: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //TokenManager.init(applicationContext)
         setContent {
             MyApp()
         }

@@ -17,11 +17,16 @@ import kotlinx.coroutines.Dispatchers
 import org.json.JSONObject
 import java.net.URL
 import java.net.HttpURLConnection
-
-
+import okhttp3.OkHttpClient
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+//import eina.unizar.frontend_movil.ui.utils.AuthInterceptor
+import okhttp3.logging.HttpLoggingInterceptor
 
 object functions {
-    const val BASE_URL = "http://galaxy.t2dc.es:3000" //DUDA
+    const val BASE_URL = "http://galaxy.t2dc.es:3000"
+
+
     suspend fun get(endpoint: String): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("$BASE_URL/$endpoint")
@@ -38,6 +43,25 @@ object functions {
         }
     }
 
+    suspend fun getWithHeaders(endpoint: String, headers: Map<String, String>): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("$BASE_URL/$endpoint")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "GET"
+            connection.setRequestProperty("Accept", "application/json")
+
+            for ((key, value) in headers) {
+                connection.setRequestProperty(key, value)
+            }
+
+            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                return@withContext connection.inputStream.bufferedReader().readText()
+            } else null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
 
 
     suspend fun post(endpoint: String, jsonBody: JSONObject): String? = withContext(Dispatchers.IO) {
@@ -102,6 +126,89 @@ object functions {
                 else -> null
             }
         } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
+    suspend fun put(endpoint: String, body: String, headers: Map<String, String> = emptyMap()): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("$BASE_URL/$endpoint")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "PUT"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "application/json")
+
+            // Añadir headers personalizados
+            for ((key, value) in headers) {
+                connection.setRequestProperty(key, value)
+            }
+
+            // Escribir el cuerpo de la solicitud
+            connection.outputStream.bufferedWriter().use {
+                it.write(body)
+            }
+
+            return@withContext when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED, HttpURLConnection.HTTP_NO_CONTENT -> {
+                    if (connection.contentLength > 0) {
+                        connection.inputStream.bufferedReader().readText()
+                    } else {
+                        "{\"success\":true}"
+                    }
+                }
+                HttpURLConnection.HTTP_UNAUTHORIZED -> {
+                    // Manejar caso de token inválido
+                    val errorResponse = connection.errorStream.bufferedReader().readText()
+                    android.util.Log.e("API", "Error 401 en PUT a $endpoint: $errorResponse")
+                    null
+                }
+                else -> {
+                    val errorResponse = connection.errorStream?.bufferedReader()?.readText() ?: "Error desconocido"
+                    android.util.Log.e("API", "Error ${connection.responseCode} en PUT a $endpoint: $errorResponse")
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("API", "Excepción en PUT a $endpoint: ${e.message}")
+            e.printStackTrace()
+            null
+        }
+    }
+
+    // Método adicional para verificar la integridad del token
+    suspend fun postWithBody(endpoint: String, body: String, headers: Map<String, String> = emptyMap()): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("$BASE_URL/$endpoint")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "application/json")
+
+            // Añadir headers personalizados
+            for ((key, value) in headers) {
+                connection.setRequestProperty(key, value)
+            }
+
+            // Escribir el cuerpo de la solicitud
+            connection.outputStream.bufferedWriter().use {
+                it.write(body)
+            }
+
+            return@withContext when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED -> {
+                    connection.inputStream.bufferedReader().readText()
+                }
+                else -> {
+                    val errorResponse = connection.errorStream?.bufferedReader()?.readText() ?: "Error desconocido"
+                    android.util.Log.e("API", "Error ${connection.responseCode} en POST a $endpoint: $errorResponse")
+                    null
+                }
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("API", "Excepción en POST a $endpoint: ${e.message}")
             e.printStackTrace()
             null
         }

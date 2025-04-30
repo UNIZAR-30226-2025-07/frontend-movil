@@ -31,35 +31,65 @@ import kotlinx.coroutines.launch
 fun PlayerProgress(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
-    val TAG = "PlayerProgress"
 
     var username by remember { mutableStateOf("Guest") }
     var token by remember { mutableStateOf(sharedPreferences.getString("access_token", null)) }
 
     suspend fun fetchUsername(userId: String): String {
         return try {
-            val response = functions.get("main-screen/get-user/$userId")
+            Log.d("PlayerProgress", "Iniciando fetchUsername para userId: $userId")
+            val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+            val token = sharedPreferences.getString("access_token", null)
+
+            val headers = mapOf(
+                "Content-Type" to "application/json",
+                "Auth" to (token ?: "")
+            )
+
+            Log.d("PlayerProgress", "Headers: $headers")
+            val response = functions.getWithHeaders("main-screen/get-user/$userId", headers)
+            Log.d("PlayerProgress", "Respuesta: $response")
+
             if (response != null) {
                 val jsonObject = org.json.JSONObject(response)
-                jsonObject.optString("username", "Guest")
+                jsonObject.optString("username", "Guest").also {
+                    Log.d("PlayerProgress", "Username obtenido: $it")
+                }
             } else {
+                Log.e("PlayerProgress", "Respuesta nula del servidor")
                 "Guest"
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error obteniendo username: ${e.message}")
+            Log.e("PlayerProgress", "Error obteniendo username: ${e.message}", e)
             "Guest"
         }
     }
 
     fun extractUserId(token: String?): String? {
-        if (token == null) return null
+        if (token == null) {
+            Log.d("PlayerProgress", "Token es nulo")
+            return null
+        }
+
         return try {
             val parts = token.split(".")
-            val payload = String(android.util.Base64.decode(parts[1], android.util.Base64.URL_SAFE))
-            val jsonObject = org.json.JSONObject(payload)
-            jsonObject.optString("id", null)
+            if (parts.size != 3) {
+                Log.e("PlayerProgress", "Token malformado")
+                return null
+            }
+
+            // Ajustar el padding del Base64
+            val payload = parts[1].padEnd((parts[1].length + 3) / 4 * 4, '=')
+            val decoded = android.util.Base64.decode(payload, android.util.Base64.URL_SAFE)
+            val jsonString = String(decoded)
+            Log.d("PlayerProgress", "Payload decodificado: $jsonString")
+
+            val jsonObject = org.json.JSONObject(jsonString)
+            jsonObject.optString("id", null).also {
+                Log.d("PlayerProgress", "UserId extraído: $it")
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error extrayendo userId: ${e.message}")
+            Log.e("PlayerProgress", "Error decodificando token: ${e.message}", e)
             null
         }
     }

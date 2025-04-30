@@ -184,13 +184,21 @@ fun NewAccountScreen(navController: NavController) {
         }
     }
 }
-
+fun validatePassword(password: String): Boolean {
+    val regex = "^(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{7,}$".toRegex()
+    return regex.matches(password)
+}
 suspend fun registerUser(username: String, email: String, password: String, confirmPassword: String,
                          context: Context): Boolean {
     if (password != confirmPassword) {
         Toast.makeText(context, "Las contraseñas no coinciden", Toast.LENGTH_LONG).show()
         return false
     }
+    if(validatePassword(password) == false){
+        Toast.makeText(context, "La contraseña debe tener al menos 7 caracteres, una mayúscula, un número y un símbolo", Toast.LENGTH_LONG).show()
+        return false
+    }
+
     val hashedPassword = hashPassword(password)
     val jsonBody = JSONObject().apply {
         put("username", username)
