@@ -9,8 +9,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,9 +21,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import eina.unizar.frontend_movil.R
 import android.content.SharedPreferences
-import eina.unizar.frontend_movil.ui.functions.functions
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import eina.unizar.frontend_movil.ui.functions.Functions
 
 @Composable
 fun PlayerProgress(navController: NavController) {
@@ -47,7 +43,7 @@ fun PlayerProgress(navController: NavController) {
             )
 
             Log.d("PlayerProgress", "Headers: $headers")
-            val response = functions.getWithHeaders("main-screen/get-user/$userId", headers)
+            val response = Functions.getWithHeaders("main-screen/get-user/$userId", headers)
             Log.d("PlayerProgress", "Respuesta: $response")
 
             if (response != null) {

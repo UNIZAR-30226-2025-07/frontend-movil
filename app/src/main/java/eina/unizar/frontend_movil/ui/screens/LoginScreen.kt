@@ -21,9 +21,7 @@ import eina.unizar.frontend_movil.ui.theme.TextWhite
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
-import eina.unizar.frontend_movil.ui.functions.functions
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import eina.unizar.frontend_movil.ui.functions.Functions
 import org.json.JSONObject
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -160,7 +158,7 @@ fun LoginScreen(navController: NavController) {
                                     jsonBody.put("email", email.trim())
                                     jsonBody.put("password", hashedPassword)
                                     Log.d("LoginScreen", "Enviando petición con email: ${email.trim()}")
-                                    val response = functions.post("auth/sign-in", jsonBody)
+                                    val response = Functions.post("auth/sign-in", jsonBody)
                                     if (response != null) {
                                         Log.d("LoginScreen", "Respuesta del servidor: $response")
                                         try {
