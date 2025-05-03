@@ -26,12 +26,17 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.ui.platform.LocalContext
 import eina.unizar.frontend_movil.ui.functions.Functions
 import kotlinx.coroutines.launch
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 
 @Composable
 fun FriendRequestItem(
     name: String,
     time: String,
-    onAccept: () -> Unit
+    onAccept: () -> Unit,
+    onReject: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -72,6 +77,18 @@ fun FriendRequestItem(
                 Icon(
                     imageVector = Icons.Default.Check,
                     contentDescription = "Aceptar solicitud",
+                    tint = TextWhite
+                )
+            }
+            IconButton(
+                onClick = onReject,
+                modifier = Modifier
+                    .background(RedMessage, shape = RoundedCornerShape(50))
+                    .size(36.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Close,
+                    contentDescription = "Rechazar solicitud",
                     tint = TextWhite
                 )
             }
@@ -408,6 +425,65 @@ fun FriendRequestsScreen(navController: NavController) {
                                         friendRequests = friendRequests.filter { it.first != name }
                                     } catch (e: Exception) {
                                         Log.e("FriendRequests", "Error al aceptar solicitud: ${e.message}")
+                                        e.printStackTrace()
+                                    }
+
+                                }
+                            },
+                            onReject = {
+                                coroutineScope.launch {
+                                    try {
+                                        // Obtener credenciales
+                                        val sharedPreferences = context.getSharedPreferences(
+                                            "user_prefs",
+                                            Context.MODE_PRIVATE
+                                        )
+                                        val authPreferences = context.getSharedPreferences(
+                                            "auth_prefs",
+                                            Context.MODE_PRIVATE
+                                        )
+                                        val userId = sharedPreferences.getString("userId", null)
+                                        val token = authPreferences.getString("access_token", null)
+
+                                        if (userId == null || token == null) {
+                                            Log.e("FriendRequests", "Error: Sin credenciales")
+                                            return@launch
+                                        }
+
+                                        // Preparar headers
+                                        val headers = mapOf(
+                                            "Content-Type" to "application/json",
+                                            "Auth" to token
+                                        )
+
+                                        // Obtener ID del remitente a partir del nombre
+                                        val friendIdResponse = Functions.getWithHeaders(
+                                            "main-screen/get-id/$name",
+                                            headers
+                                        )
+
+                                        val friendId = try {
+                                            val jsonObject = org.json.JSONObject(friendIdResponse)
+                                            jsonObject.getString("id")
+                                        } catch (e: Exception) {
+                                            Log.e("FriendRequests", "Error al obtener ID: ${e.message}")
+                                            return@launch
+                                        }
+
+                                        // Rechazar solicitud
+                                        val body = """{"id": "$friendId"}"""
+                                        val response = Functions.postWithBody(
+                                            "friends/deny_solicitud/$userId",
+                                            body,
+                                            headers
+                                        )
+
+                                        Log.d("FriendRequests", "Respuesta rechazar: $response")
+
+                                        // Actualizar la lista quitando la solicitud rechazada
+                                        friendRequests = friendRequests.filter { it.first != name }
+                                    } catch (e: Exception) {
+                                        Log.e("FriendRequests", "Error al rechazar solicitud: ${e.message}")
                                         e.printStackTrace()
                                     }
                                 }
