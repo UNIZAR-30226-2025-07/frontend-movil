@@ -47,6 +47,38 @@ object Functions {
         }
     }
 
+    suspend fun postWithHeaders(endpoint: String, headers: Map<String, String>, jsonBody: JSONObject): String? = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("$BASE_URL/$endpoint")
+            val connection = url.openConnection() as HttpURLConnection
+            connection.requestMethod = "POST"
+            connection.doOutput = true
+            connection.setRequestProperty("Content-Type", "application/json")
+            connection.setRequestProperty("Accept", "application/json")
+
+            for ((key, value) in headers) {
+                connection.setRequestProperty(key, value)
+            }
+
+            connection.outputStream.bufferedWriter().use {
+                it.write(jsonBody.toString())
+            }
+
+            return@withContext when (connection.responseCode) {
+                HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED -> {
+                    connection.inputStream.bufferedReader().readText()
+                }
+                HttpURLConnection.HTTP_UNAUTHORIZED -> {
+                    connection.errorStream.bufferedReader().readText()
+                }
+                else -> null
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
 
     suspend fun post(endpoint: String, jsonBody: JSONObject): String? = withContext(Dispatchers.IO) {
         try {
