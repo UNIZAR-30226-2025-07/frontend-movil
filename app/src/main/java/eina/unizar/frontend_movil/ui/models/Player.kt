@@ -5,5 +5,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Player(
     val name: String,
-    val isReady: Boolean
-)
+    val isReady: Boolean,
+    val id: String
+) {
+
+}
