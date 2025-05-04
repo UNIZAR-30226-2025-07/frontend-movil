@@ -113,7 +113,8 @@ object Functions {
         return hashedBytes.joinToString("") { "%02x".format(it) }
     }*/
 
-    suspend fun delete(endpoint: String, jsonBody: String): String? = withContext(Dispatchers.IO) {
+    //Modificada para que las headers sean opcionales pero puedan ser usadas
+    suspend fun delete(endpoint: String, jsonBody: String, headers: Map<String, String> = emptyMap()): String? = withContext(Dispatchers.IO) {
         try {
             val url = URL("$BASE_URL/$endpoint")
             val connection = url.openConnection() as HttpURLConnection
@@ -121,6 +122,11 @@ object Functions {
             connection.doOutput = true
             connection.setRequestProperty("Content-Type", "application/json")
             connection.setRequestProperty("Accept", "application/json")
+
+            // Añadir headers personalizados
+            for ((key, value) in headers) {
+                connection.setRequestProperty(key, value)
+            }
 
             // Escribimos el cuerpo JSON
             connection.outputStream.bufferedWriter().use {

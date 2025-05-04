@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import eina.unizar.frontend_movil.R
 import android.content.SharedPreferences
 import eina.unizar.frontend_movil.ui.functions.Functions
+import kotlin.apply
 
 @Composable
 fun PlayerProgress(navController: NavController) {
@@ -83,6 +84,10 @@ fun PlayerProgress(navController: NavController) {
             val jsonObject = org.json.JSONObject(jsonString)
             jsonObject.optString("id", null).also {
                 Log.d("PlayerProgress", "UserId extraído: $it")
+                val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE) //Guardamos en user_prefs el user_id obtenido
+                val editor = sharedPreferences.edit()
+                editor.putString("userId", it)
+                editor.apply()
             }
         } catch (e: Exception) {
             Log.e("PlayerProgress", "Error decodificando token: ${e.message}", e)
