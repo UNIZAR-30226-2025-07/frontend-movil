@@ -1,6 +1,8 @@
 package eina.unizar.frontend_movil.ui.navigation
 
 import MainMenuScreen
+import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -36,64 +38,132 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
+import eina.unizar.frontend_movil.ui.functions.Functions
 import eina.unizar.frontend_movil.ui.theme.*
 import eina.unizar.frontend_movil.ui.models.Friend
 import eina.unizar.frontend_movil.ui.viewmodel.*
 import eina.unizar.frontend_movil.ui.functions.SharedPrefsUtil
 import eina.unizar.frontend_movil.ui.models.Message
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 
-
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GameTypeSelectionScreen(navController: NavController) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PurpleBackground)
-            .padding(12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Título compacto
-        Text(
-            text = "NUEVA PARTIDA",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = TextWhite,
-            modifier = Modifier.padding(vertical = 16.dp)
-        )
+    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-        // Contenedor de botones ajustado
+    // Diálogo para mostrar errores
+    errorMessage?.let { message ->
+        AlertDialog(
+            onDismissRequest = { errorMessage = null },
+            title = { Text("Error") },
+            text = { Text(message) },
+            confirmButton = {
+                TextButton(onClick = { errorMessage = null }) {
+                    Text("Aceptar")
+                }
+            }
+        )
+    }
+
+    // Diálogo de carga
+    if (isLoading) {
+        AlertDialog(
+            onDismissRequest = { },
+            title = { Text("Creando partida") },
+            text = {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(color = GreenMessage)
+                    Text("Espere por favor...")
+                }
+            },
+            confirmButton = { }
+        )
+    }
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "NUEVA PARTIDA",
+                        color = TextWhite,
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.navigateUp() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = TextWhite
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = PurpleBackground
+                )
+            )
+        },
+        containerColor = PurpleBackground
+    ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Botón Partida Pública
-            CompactGameButton(
-                text = "PÚBLICA",
-                icon = Icons.Default.PlayArrow,
-                onClick = { navController.navigate("game") },
-                color = GreenMessage.copy(alpha = 0.8f)
-            )
+            // Contenedor de botones ajustado
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(top = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // Botón Partida Pública
+                CompactGameButton(
+                    text = "PÚBLICA",
+                    icon = Icons.Default.PlayArrow,
+                    onClick = { navController.navigate("game") },
+                    color = GreenMessage.copy(alpha = 0.8f)
+                )
 
-            // Botón Unirse a Sala
-            CompactGameButton(
-                text = "UNIRSE A SALA",
-                icon = Icons.Default.PlayArrow,
-                onClick = { navController.navigate("join-private-room") },
-                color = CardGray.copy(alpha = 0.4f)
-            )
+                // Botón Unirse a Sala
+                CompactGameButton(
+                    text = "UNIRSE A SALA",
+                    icon = Icons.Default.PlayArrow,
+                    onClick = { navController.navigate("join-private-room") },
+                    color = CardGray.copy(alpha = 0.4f)
+                )
 
-            // Botón Crear Sala
-            CompactGameButton(
-                text = "CREAR SALA",
-                icon = Icons.Default.PlayArrow,
-                onClick = { navController.navigate("create-private-room") },
-                color = CardGray.copy(alpha = 0.4f)
-            )
+                // Botón Crear Sala
+                CompactGameButton(
+                    text = "CREAR SALA",
+                    icon = Icons.Default.PlayArrow,
+                    onClick = {
+                        isLoading = true
+                        createPrivateGame(context) { success, error, gameId ->
+                            isLoading = false
+                            if (success) {
+                                navController.navigate("create-private-room")
+                            } else {
+                                errorMessage = error
+                            }
+                        }
+                    },
+                    color = CardGray.copy(alpha = 0.4f)
+                )
+            }
         }
     }
 }
@@ -133,4 +203,106 @@ private fun CompactGameButton(
             )
         }
     }
+}
+
+
+private fun createPrivateGame(
+    context: Context,
+    callback: (Boolean, String?, String?) -> Unit
+) {
+    CoroutineScope(Dispatchers.Main).launch {
+        try {
+            // Obtener token y userId
+            val token = FunctionsUserId.getToken(context)
+            val userId = FunctionsUserId.extractUserId(token)
+
+            if (userId == null) {
+                callback(false, "No se pudo obtener el ID del usuario", null)
+                return@launch
+            }
+
+            // Generar valores aleatorios
+            val passwd = generateRandomString(8)
+            val name = "Partida-${generateRandomString(4)}"
+
+            // Guardar contraseña en preferencias
+            context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("gamePasswd", passwd)
+                .apply()
+
+            // Crear cuerpo de la petición
+            val createBody = JSONObject().apply {
+                put("passwd", passwd)
+                put("maxPlayers", 8)
+                put("name", name)
+                put("idLeader", userId)
+            }
+
+            // Headers para las peticiones
+            val headers = mapOf(
+                "Content-Type" to "application/json",
+                "Auth" to (token ?: "")
+            )
+
+            // Crear la partida privada
+            val createResponse = Functions.postWithHeaders(
+                "private/create",
+                headers,
+                createBody
+            )
+
+            if (createResponse == null) {
+                callback(false, "Error al crear la partida", null)
+                return@launch
+            }
+
+            val createJson = JSONObject(createResponse)
+            //Mensaje de log
+            Log.d("CreatePrivateGame", "Respuesta de creación: $createJson")
+            val gameId = createJson.getString("id")
+
+            // Guardar gameId en preferencias
+            context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("gameId", gameId)
+                .apply()
+
+            Log.d("CreatePrivateGame", "Partida creada exitosamente: $createJson")
+
+            // Cuerpo para unirse a la partida
+            val joinBody = JSONObject().apply {
+                put("gameId", gameId)
+                put("passwd", passwd)
+                put("idUser", userId)
+            }
+
+            // Unirse a la partida privada
+            val joinResponse = Functions.postWithHeaders(
+                "private/join",
+                headers,
+                joinBody
+            )
+
+            if (joinResponse == null) {
+                callback(false, "Error al unirse a la partida", null)
+                return@launch
+            }
+
+            Log.d("CreatePrivateGame", "Unido a la partida exitosamente: $joinResponse")
+            callback(true, null, gameId)
+
+        } catch (e: Exception) {
+            Log.e("CreatePrivateGame", "Error: ${e.message}", e)
+            callback(false, "Error: ${e.message}", null)
+        }
+    }
+}
+
+// Función para generar cadenas aleatorias
+private fun generateRandomString(length: Int): String {
+    val charset = ('a'..'z') + ('0'..'9')
+    return (1..length)
+        .map { charset.random() }
+        .joinToString("")
 }
