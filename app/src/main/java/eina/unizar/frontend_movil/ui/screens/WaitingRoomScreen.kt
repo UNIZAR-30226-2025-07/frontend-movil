@@ -1,7 +1,5 @@
-// Añade este import para el icono de check
 package eina.unizar.frontend_movil.ui.screens
 
-import androidx.compose.material.icons.filled.Check
 import MainMenuScreen
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -19,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
@@ -58,11 +57,11 @@ fun WaitingRoomScreen(
     var isReady by remember { mutableStateOf(false) }
     val players = remember {
         mutableStateListOf(
-            Player("Tú", isReady),  // Jugador actual
-            Player("Daniel", true),
-            Player("Hector", false),
-            Player("David", true),
-            Player("Hugo", false)
+            Player("Tú", isReady, "hola"),  // Jugador actual
+            Player("Daniel", true, "hola"),
+            Player("Hector", false, "hola"),
+            Player("David", true, "hola"),
+            Player("Hugo", false, "hola")
         )
     }
 
@@ -124,7 +123,7 @@ fun WaitingRoomScreen(
                 ) { player ->
                     PlayerListItem(
                         player = player,
-                        isCurrentUser = player.name == "Tú"
+                        isLeader = player.name == "Tú"  // Aquí corregimos el parámetro
                     )
                 }
             }
@@ -138,8 +137,8 @@ fun WaitingRoomScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isReady) GreenMessage.copy(alpha = 0.8f) 
-                                   else CardGray.copy(alpha = 0.4f)
+                    containerColor = if (isReady) GreenMessage.copy(alpha = 0.8f)
+                    else CardGray.copy(alpha = 0.4f)
                 )
             ) {
                 Text(
@@ -152,7 +151,7 @@ fun WaitingRoomScreen(
 }
 
 @Composable
-fun PlayerListItem(player: Player, isCurrentUser: Boolean = false) {
+fun PlayerListItemB(player: Player, isLeader: Boolean) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -170,16 +169,16 @@ fun PlayerListItem(player: Player, isCurrentUser: Boolean = false) {
                 Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = null,
-                    tint = if (isCurrentUser) GreenMessage else TextWhite
+                    tint = if (isLeader) GreenMessage else TextWhite
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = player.name,
-                    color = if (isCurrentUser) GreenMessage else TextWhite,
+                    color = if (isLeader) GreenMessage else TextWhite,
                     fontSize = 16.sp
                 )
             }
-            
+
             if (player.isReady) {
                 Icon(
                     imageVector = Icons.Default.Check,
