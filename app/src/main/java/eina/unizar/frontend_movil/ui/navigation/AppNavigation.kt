@@ -55,7 +55,7 @@ fun AppNavigation() {
             AddFriendScreen(navController)
         }
         composable("achievements") {
-            AchievementsScreen()
+            AchievementsScreen(navController)
         }
         composable("settings") {
             SettingsScreen()
