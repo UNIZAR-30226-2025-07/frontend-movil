@@ -528,11 +528,15 @@ class ChatWebSocketClient(
                     return
                 }
 
+                val emisorId = jsonObject.getString("id_friend_emisor")
+
+                // La corrección está aquí - un mensaje es "sent by user" solo
+                // si el ID del emisor coincide con el ID del usuario actual
                 val newMessage = Message(
                     id = jsonObject.getString("id"),
                     text = jsonObject.getString("content"),
                     timestamp = jsonObject.getString("date"),
-                    sentByUser = jsonObject.getString("id_friend_emisor") != jsonObject.getString("id_friend_receptor")
+                    sentByUser = false  // Los mensajes que llegan por WS siempre son del otro usuario
                 )
 
                 onMessageReceived(newMessage)
