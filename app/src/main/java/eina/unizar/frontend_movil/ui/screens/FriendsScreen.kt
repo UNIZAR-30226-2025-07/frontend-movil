@@ -33,6 +33,8 @@ import eina.unizar.frontend_movil.ui.theme.*
 import androidx.navigation.NavController
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.runtime.setValue
 import eina.unizar.frontend_movil.ui.functions.Functions
 import kotlinx.coroutines.launch
@@ -354,10 +356,33 @@ fun FriendsScreen(navController: NavController) {
                         horizontalArrangement = Arrangement.spacedBy(4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Solicitudes")
+                        Icon(
+                            imageVector = Icons.Default.Check,
+                            contentDescription = "Solicitudes",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text("SOLICITUDES")
                         if (pendingRequestsCount > 0) {
                             Badge { Text(pendingRequestsCount.toString()) }
                         }
+                    }
+                }
+
+                Button(
+                    onClick = { navController.navigate("chats") },
+                    colors = ButtonDefaults.buttonColors(containerColor = CardGray.copy(alpha = 0.3f)),
+                    modifier = Modifier.padding(end = 8.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Email,
+                            contentDescription = "Chats",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Text("CHATS")
                     }
                 }
 
@@ -371,10 +396,10 @@ fun FriendsScreen(navController: NavController) {
                     ) {
                         Icon(
                             imageVector = Icons.Default.Person,
-                            contentDescription = "Añadir amigo",
+                            contentDescription = "Nuevo Amigo",
                             modifier = Modifier.size(20.dp)
                         )
-                        Text("AÑADIR AMIGO")
+                        Text("NUEVO AMIGO")
                     }
                 }
             }
