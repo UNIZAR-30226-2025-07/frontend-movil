@@ -22,6 +22,7 @@ import androidx.navigation.NavController
 import eina.unizar.frontend_movil.R
 import android.content.SharedPreferences
 import eina.unizar.frontend_movil.ui.functions.Functions
+import eina.unizar.frontend_movil.ui.components.AspectSelector
 import kotlin.apply
 
 @Composable
@@ -228,6 +229,7 @@ fun MainMenuScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 PlayerProgress(navController) // Llamada a la función PlayerProgress
+
                 // Columna que contiene dos filas con dos iconos cada una
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -242,7 +244,7 @@ fun MainMenuScreen(navController: NavController) {
                     ) {
                         // Botón de Configuración (Ajustes) usando un ícono PNG
                         Button(
-                            onClick = { navController.navigate("settings") },  // Navegar a la pantalla de configuración
+                            onClick = { navController.navigate("settings") },
                             modifier = Modifier
                                 .height(60.dp)
                                 .width(90.dp)
@@ -255,7 +257,7 @@ fun MainMenuScreen(navController: NavController) {
                         }
                         // Botón de Amigos usando un ícono PNG
                         Button(
-                            onClick = { navigateWithAuth("friends") },  // Navegar a la pantalla de amigos
+                            onClick = { navigateWithAuth("friends") },
                             modifier = Modifier
                                 .height(60.dp)
                                 .width(90.dp)
@@ -267,45 +269,60 @@ fun MainMenuScreen(navController: NavController) {
                             )
                         }
                     }
-                    // Segunda fila: Tienda (izquierda) y Logros (derecha)
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Botón de Tienda usando un ícono PNG
-                        Button(
-                            onClick = { navigateWithAuth("store") },  // Navegar a la pantalla de tienda
-                            modifier = Modifier
-                                .height(60.dp)
-                                .width(90.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.carrito),
-                                contentDescription = "Tienda",
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                        // Botón de Logros usando un ícono PNG
-                        Button(
-                            onClick = { navigateWithAuth("achievements") },  // Navegar a la pantalla de logros
-                            modifier = Modifier
-                                .height(60.dp)
-                                .width(90.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.medalla),
-                                contentDescription = "Logros",
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    }
+                }
+            }
+
+            // AspectSelector en el centro de la pantalla
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                AspectSelector(navController)
+            }
+
+            // Segunda fila de iconos - Ahora en la parte inferior
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 120.dp)
+                    .align(Alignment.BottomCenter),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Botón de Tienda usando un ícono PNG
+                Button(
+                    onClick = { navigateWithAuth("store") },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(90.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.carrito),
+                        contentDescription = "Tienda",
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                // Botón de Logros usando un ícono PNG
+                Button(
+                    onClick = { navigateWithAuth("achievements") },
+                    modifier = Modifier
+                        .height(60.dp)
+                        .width(90.dp)
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.medalla),
+                        contentDescription = "Logros",
+                        modifier = Modifier.fillMaxSize()
+                    )
                 }
             }
 
             // Botón de JUGAR con animación de fondo, posicionado a la esquina inferior derecha
             Button(
-                onClick = { navController.navigate("play") },  // Navegar a la pantalla de juego
+                onClick = { navController.navigate("play") },
                 colors = ButtonDefaults.buttonColors(backgroundColor = animatedColor),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
