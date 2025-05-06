@@ -21,14 +21,11 @@ fun AppNavigation() {
         composable("login_screen") {
             LoginScreen(navController)
         }
-        composable("game") {
+        composable("play") {
             GameScreen(navController)
         }
         composable("friends") {
             FriendsScreen(navController)
-        }
-        composable("play") {
-            GameTypeSelectionScreen(navController)
         }
         composable("create-private-room") {
             PrivateRoomScreen(navController)
@@ -55,7 +52,7 @@ fun AppNavigation() {
             AddFriendScreen(navController)
         }
         composable("achievements") {
-            AchievementsScreen()
+            AchievementsScreen(navController)
         }
         composable("settings") {
             SettingsScreen()
