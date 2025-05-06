@@ -33,6 +33,7 @@ fun PlayerProgress(navController: NavController) {
     var username by remember { mutableStateOf("Guest") }
     var token by remember { mutableStateOf(sharedPreferences.getString("access_token", null)) }
 
+
     suspend fun fetchUsername(userId: String): String {
         return try {
             Log.d("PlayerProgress", "Iniciando fetchUsername para userId: $userId")
@@ -159,6 +160,7 @@ fun PlayerProgress(navController: NavController) {
 fun MainMenuScreen(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+    var token by remember { mutableStateOf(sharedPreferences.getString("access_token", null)) }
 
     fun checkTokenValidity(context: Context): Boolean {
         val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
@@ -322,7 +324,13 @@ fun MainMenuScreen(navController: NavController) {
 
             // Botón de JUGAR con animación de fondo, posicionado a la esquina inferior derecha
             Button(
-                onClick = { navController.navigate("play") },
+                onClick = {
+                    if (token == null) {
+                        navController.navigate("play")
+                    } else {
+                        navController.navigate("game")
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(backgroundColor = animatedColor),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
