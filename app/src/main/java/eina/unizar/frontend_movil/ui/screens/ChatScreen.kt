@@ -46,6 +46,15 @@ import java.net.URL
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.media.MediaPlayer
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import eina.unizar.frontend_movil.ui.navigation.AppNavigation
+import eina.unizar.frontend_movil.ui.utils.MusicManager
+
 
 @Composable
 fun ChatScreen(navController: NavController, userId: String?, friendId: String?, friendName: String?) {
@@ -93,7 +102,6 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
                             )
                         )
                     }
-
                     messages = fetchedMessages
                 }
             }
