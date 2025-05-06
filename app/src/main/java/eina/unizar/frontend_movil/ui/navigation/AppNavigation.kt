@@ -78,5 +78,21 @@ fun AppNavigation() {
         composable("forgot_password") {
             ForgotPasswordScreen(navController)
         }
+        composable("chats") {
+            ChatsScreen(navController)
+        }
+        composable(
+            route = "chatScreen/{userId}/{friendId}/{friendName}",
+            arguments = listOf(
+                navArgument("userId") { type = NavType.StringType },
+                navArgument("friendId") { type = NavType.StringType },
+                navArgument("friendName") {type = NavType.StringType}
+            )
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            val friendId = backStackEntry.arguments?.getString("friendId") ?: ""
+            val friendName = backStackEntry.arguments?.getString("friendName") ?: ""
+            ChatScreen(navController, userId, friendId, friendName)
+        }
     }
 }
