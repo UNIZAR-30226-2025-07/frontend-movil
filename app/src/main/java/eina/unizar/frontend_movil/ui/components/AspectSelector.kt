@@ -4,6 +4,7 @@ import FunctionsUserId
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -33,6 +34,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.material3.MaterialTheme
+import kotlin.compareTo
+
 
 data class AspectItem(
     val id: Int,
@@ -83,21 +88,33 @@ fun AspectSelector(navController: NavController) {
         }
     }
 
+    var animationInProgress by remember { mutableStateOf(false) }
+    var animationDirection by remember { mutableStateOf(0) }
+    val animatedOffset by animateFloatAsState(
+        targetValue = if (animationInProgress) {
+            if (animationDirection > 0) 300f else -300f
+        } else 0f,
+        finishedListener = {
+            // Cambiar el índice solo cuando la animación termina
+            if (animationInProgress) {
+                selectedIndex = (selectedIndex + animationDirection + aspects.size) % aspects.size
+                animationInProgress = false
+            }
+        }
+    )
+
     Box(
         modifier = Modifier
             .width(220.dp)
             .height(170.dp)
-            .background(Color(0xFFDDDDDD), shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
+            .background(Color(0xFFe1c2f1), shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
             .padding(20.dp)
     ) {
-
-        // Contenido principal
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Selector de imágenes con botones de navegación
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,24 +133,22 @@ fun AspectSelector(navController: NavController) {
                         text = "<",
                         fontSize = 30.sp,
                         modifier = Modifier.clickable {
-                            if (aspects.isNotEmpty()) {
-                                selectedIndex = (selectedIndex - 1 + aspects.size) % aspects.size
-                            }
-                            if (token == null) {
-                                navController.navigate("login_screen")
+                            if (!animationInProgress && aspects.isNotEmpty()) {
+                                animationDirection = -1
+                                animationInProgress = true
                             }
                         }
                     )
                 }
 
-                // Imagen del aspecto
+                // Imagen del aspecto con animación
                 Box(
                     modifier = Modifier
                         .size(80.dp)
                         .clip(CircleShape)
                         .align(Alignment.Center)
+                        .offset(x = animatedOffset.dp)
                 ) {
-                    // Intentar cargar la imagen desde recursos
                     val imageRes = getAspectResourceId(context, currentAspect.name)
                     Image(
                         painter = painterResource(id = imageRes),
@@ -155,11 +170,9 @@ fun AspectSelector(navController: NavController) {
                         text = ">",
                         fontSize = 30.sp,
                         modifier = Modifier.clickable {
-                            if (aspects.isNotEmpty()) {
-                                selectedIndex = (selectedIndex + 1) % aspects.size
-                            }
-                            if (token == null) {
-                                navController.navigate("login_screen")
+                            if (!animationInProgress && aspects.isNotEmpty()) {
+                                animationDirection = 1
+                                animationInProgress = true
                             }
                         }
                     )
@@ -268,6 +281,5 @@ private fun getAspectResourceId(context: Context, aspectName: String): Int {
         return resourceId
     }
 
-    // Si todo falla, usar la imagen por defecto
     return R.drawable.default_skin
 }
