@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="160dp"
+    android:layout_height="240dp"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/card_background">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/level_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="12dp">
+
+        <!-- Número de nivel -->
+        <TextView
+            android:id="@+id/level_number"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/level_circle"
+            android:gravity="center"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="5"/>
+
+        <!-- Icono de bloqueo -->
+        <ImageView
+            android:id="@+id/lock_icon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_lock"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:visibility="visible"/>
+
+        <!-- Divisor -->
+        <View
+            android:id="@+id/divider_horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/level_number"/>
+
+        <!-- Sección gratuita -->
+        <TextView
+            android:id="@+id/free_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GRATIS"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/divider_horizontal"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <ImageView
+            android:id="@+id/free_reward_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/free_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@drawable/ic_gems"/>
+
+        <TextView
+            android:id="@+id/free_reward_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@id/free_reward_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="25 Gemas"/>
+
+        <!-- Divisor -->
+        <View
+            android:id="@+id/divider_section"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider_color"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/free_reward_name"/>
+
+        <!-- Sección premium -->
+        <TextView
+            android:id="@+id/premium_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="PREMIUM"
+            android:textSize="12sp"
+            android:textColor="@color/gold"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/divider_section"
+            app:layout_constraintStart_toStartOf="parent"/>
+
+        <ImageView
+            android:id="@+id/premium_reward_icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/premium_label"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:src="@drawable/ic_skin"/>
+
+        <TextView
+            android:id="@+id/premium_reward_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="12sp"
+            android:textColor="@color/reward_highlight"
+            android:textAlignment="center"
+            app:layout_constraintTop_toBottomOf="@id/premium_reward_icon"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Aspecto Premium"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

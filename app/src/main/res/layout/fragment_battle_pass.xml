@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/galaxy_background">
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/battle_pass_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PASE DE BATALLA"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Información de temporada -->
+    <TextView
+        android:id="@+id/season_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="TEMPORADA 1: GALAXIA ESTELAR"
+        android:textSize="16sp"
+        android:textColor="@color/season_color"
+        app:layout_constraintTop_toBottomOf="@id/battle_pass_title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Estado premium -->
+    <TextView
+        android:id="@+id/premium_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/season_info"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Pase Gratuito"/>
+
+    <!-- Nivel actual y progreso -->
+    <TextView
+        android:id="@+id/progress_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:textColor="@color/white"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/premium_status"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="Nivel 5 • 450/600 puntos"/>
+
+    <!-- Barra de progreso -->
+    <FrameLayout
+        android:id="@+id/progress_bar_container"
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/progress_bar_background"
+        app:layout_constraintTop_toBottomOf="@id/progress_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <View
+            android:id="@+id/progress_bar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:background="@drawable/progress_bar_fill"
+            tools:layout_width="200dp"/>
+    </FrameLayout>
+
+    <!-- Información de nivel -->
+    <TextView
+        android:id="@+id/level_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="@color/highlight_text"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/progress_bar_container"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:text="¡150 puntos más para el nivel 6!"/>
+
+    <!-- Leyenda -->
+    <LinearLayout
+        android:id="@+id/legend_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="24dp"
+        android:gravity="center"
+        app:layout_constraintTop_toBottomOf="@id/level_info">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="GRATIS"
+            android:textColor="@color/white"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="PREMIUM"
+            android:textColor="@color/gold"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <!-- Divisor -->
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/legend_container"/>
+
+    <!-- RecyclerView de niveles -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/battle_pass_recycler"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="24dp"
+        app:layout_constraintTop_toBottomOf="@id/divider"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:listitem="@layout/item_battle_pass_level"
+        tools:itemCount="5"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
