@@ -7,4 +7,11 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="galaxy_background">#121622</color>
+    <color name="card_background">#1D2235</color>
+    <color name="gold">#FFD700</color>
+    <color name="season_color">#7D8BF5</color>
+    <color name="reward_highlight">#42E8E0</color>
+    <color name="highlight_text">#00CCFF</color>
+    <color name="divider_color">#3A4366</color>
 </resources>
