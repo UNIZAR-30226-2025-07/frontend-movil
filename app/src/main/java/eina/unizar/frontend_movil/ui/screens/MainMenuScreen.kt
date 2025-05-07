@@ -23,7 +23,10 @@ import eina.unizar.frontend_movil.R
 import android.content.SharedPreferences
 import eina.unizar.frontend_movil.ui.functions.Functions
 import eina.unizar.frontend_movil.ui.components.AspectSelector
+import eina.unizar.frontend_movil.ui.screens.BattlePassScreen
 import kotlin.apply
+import eina.unizar.frontend_movil.ui.components.BattlePassBar
+
 
 @Composable
 fun PlayerProgress(navController: NavController) {
@@ -321,7 +324,19 @@ fun MainMenuScreen(navController: NavController) {
                     )
                 }
             }
-
+            // Barra de progreso de nivel en la esquina inferior izquierda
+            BattlePassBar(
+                onClick = {
+                    if (token != null) {
+                        navController.navigate("battle_pass")
+                    } else {
+                        navController.navigate("login_screen")
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+            )
             // Botón de JUGAR con animación de fondo, posicionado a la esquina inferior derecha
             Button(
                 onClick = {
