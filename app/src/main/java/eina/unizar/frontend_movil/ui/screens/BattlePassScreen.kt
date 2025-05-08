@@ -53,6 +53,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AlertDialog
 import org.json.JSONArray
 import androidx.compose.material3.TextButton
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun BattlePassScreen(navController: NavHostController) {
@@ -259,7 +260,8 @@ fun BattlePassScreen(navController: NavHostController) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = "Volver",
-                    tint = Color.White
+                    // ponerla de color 0xFF282032
+                    tint = Color(0xFF7209B7)
                 )
             }
 
@@ -268,7 +270,9 @@ fun BattlePassScreen(navController: NavHostController) {
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                // alinear centradamente el titulo
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
 
             if (isLoading) {

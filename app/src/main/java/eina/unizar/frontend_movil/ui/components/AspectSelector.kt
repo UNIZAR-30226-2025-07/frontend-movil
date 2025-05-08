@@ -2,22 +2,21 @@ package eina.unizar.frontend_movil.ui.components
 
 import FunctionsUserId
 import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -34,9 +33,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.material3.MaterialTheme
-import kotlin.compareTo
+import kotlin.math.abs
 
 
 data class AspectItem(
@@ -51,7 +48,6 @@ fun AspectSelector(navController: NavController) {
 
     var aspects by remember { mutableStateOf(listOf<AspectItem>()) }
     var selectedIndex by remember { mutableStateOf(0) }
-
 
     val token = sharedPreferences.getString("access_token", null)
 
@@ -109,6 +105,26 @@ fun AspectSelector(navController: NavController) {
             .height(170.dp)
             .background(Color(0xFFe1c2f1), shape = androidx.compose.foundation.shape.RoundedCornerShape(10.dp))
             .padding(20.dp)
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDragEnd = {
+                        // No hacemos nada aquí, la animación ya está en progreso
+                    },
+                    onDragStart = { /* No requerido */ },
+                    onDrag = { change, dragAmount ->
+                        change.consume()
+                        // Solo iniciar la animación si no hay una en curso
+                        if (!animationInProgress && aspects.size > 1) {
+                            val horizontalDrag = dragAmount.x
+                            // Verificar que el deslizamiento sea suficientemente horizontal
+                            if (abs(horizontalDrag) > abs(dragAmount.y) && abs(horizontalDrag) > 10f) {
+                                animationDirection = if (horizontalDrag < 0) 1 else -1
+                                animationInProgress = true
+                            }
+                        }
+                    }
+                )
+            }
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),
