@@ -151,10 +151,12 @@ fun PlayerProgress(navController: NavController) {
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
+        /*
         LinearProgressIndicator(
             progress = 0.7f,
             modifier = Modifier.height(8.dp)
         )
+        */
     }
 }
 
