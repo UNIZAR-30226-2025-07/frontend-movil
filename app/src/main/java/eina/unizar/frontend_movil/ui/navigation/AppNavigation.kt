@@ -78,6 +78,9 @@ fun AppNavigation() {
         composable("chats") {
             ChatsScreen(navController)
         }
+        composable("battle_pass") {
+            BattlePassScreen(navController)
+        }
         composable(
             route = "chatScreen/{userId}/{friendId}/{friendName}",
             arguments = listOf(
