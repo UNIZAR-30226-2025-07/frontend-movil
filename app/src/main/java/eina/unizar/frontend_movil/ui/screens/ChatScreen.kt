@@ -57,8 +57,10 @@ import eina.unizar.frontend_movil.ui.utils.MusicManager
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import java.net.URI
-
-
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import kotlinx.coroutines.launch
+import kotlin.toString
 
 
 //@Composable
@@ -311,7 +313,25 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
     // Referencia al WebSocket
     val webSocketClient = remember { mutableStateOf<ChatWebSocketClient?>(null) }
 
+    val lazyListState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(messages) {
+        coroutineScope.launch {
+            if (messages.isNotEmpty()) {
+                lazyListState.animateScrollToItem(messages.size - 1) // Scroll al último mensaje
+            }
+        }
+    }
+
+
     // Función para cargar mensajes iniciales
+    fun scrollToBottom() {
+        coroutineScope.launch {
+            lazyListState.animateScrollToItem(0) // El índice 0 es el último mensaje con reverseLayout
+        }
+    }
+
     suspend fun loadInitialMessages() {
         try {
             if (friendId != null && userId != null) {
@@ -372,6 +392,7 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
             webSocketClient.value = client
             client.connect()
         }
+        scrollToBottom()
     }
 
     // Cerrar conexión WebSocket cuando el componente se desmonta
@@ -445,10 +466,11 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
             else -> {
                 // Lista de mensajes (cuando sí hay mensajes)
                 LazyColumn(
+                    state = lazyListState, // Vincular el estado del scroll
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 16.dp),
-                    // reverseLayout = true
+                        //reverseLayout = true
                 ) {
                     items(messages) { message ->
                         MessageBubble(message = message)
@@ -514,6 +536,7 @@ class ChatWebSocketClient(
 
     override fun onOpen(handshakedata: ServerHandshake?) {
         Log.d("WebSocket", "Conexión establecida")
+
     }
 
     override fun onMessage(message: String?) {
