@@ -342,7 +342,7 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
                             )
                         )
                     }
-                    messages = fetchedMessages
+                    messages = fetchedMessages.sortedBy { it.id }
                 }
             }
         } catch (e: Exception) {
@@ -448,9 +448,9 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
                     modifier = Modifier
                         .weight(1f)
                         .padding(horizontal = 16.dp),
-                    reverseLayout = true
+                    // reverseLayout = true
                 ) {
-                    items(messages.reversed()) { message ->
+                    items(messages) { message ->
                         MessageBubble(message = message)
                         Spacer(modifier = Modifier.height(4.dp))
                     }
@@ -556,8 +556,8 @@ class ChatWebSocketClient(
 
     fun sendMessage(text: String, fromUserId: String, toUserId: String) {
         try {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.getDefault())
-            val messageId = dateFormat.format(Date(System.currentTimeMillis()))
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
+            val messageId = System.currentTimeMillis() // dateFormat.format(Date(System.currentTimeMillis()))
             val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
             val timeString = timeFormat.format(Date(System.currentTimeMillis()))
 
@@ -575,7 +575,7 @@ class ChatWebSocketClient(
             // Añadir el mensaje enviado a la UI
             onMessageReceived(
                 Message(
-                    id = messageId,
+                    id = messageId.toString(),
                     text = text,
                     timestamp = timeString,
                     sentByUser = true
