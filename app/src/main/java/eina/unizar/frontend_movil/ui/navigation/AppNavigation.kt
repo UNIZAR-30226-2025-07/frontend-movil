@@ -55,7 +55,7 @@ fun AppNavigation() {
             AchievementsScreen(navController)
         }
         composable("settings") {
-            SettingsScreen()
+            SettingsScreen(navController)
         }
         composable("store") {
             StoreScreen(navController)
@@ -80,6 +80,9 @@ fun AppNavigation() {
         }
         composable("battle_pass") {
             BattlePassScreen(navController)
+        }
+        composable("support") {
+            SupportScreen(navController)
         }
         composable(
             route = "chatScreen/{userId}/{friendId}/{friendName}",
