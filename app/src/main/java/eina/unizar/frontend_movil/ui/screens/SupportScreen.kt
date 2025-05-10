@@ -40,18 +40,18 @@ fun SupportScreen(navController: NavController) {
     var tipoConsulta by remember { mutableStateOf("Seleccione una opción") }
     var titulo by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
-    val tiposConsulta = listOf("Seleccione una opción", "Soporte técnico", "Denunciar un jugador", "Problemas con la cuenta", "Sugerencias", "Otro")
+    val tiposConsulta = listOf("Seleccione una opción", "Soporte técnico", "Denunciar jugador", "Problemas cuenta", "Sugerencias", "Otros")
     var expandedDropdown by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PurpleBackground)
-    ) {
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        containerColor = PurpleBackground
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -162,14 +162,16 @@ fun SupportScreen(navController: NavController) {
                             modifier = Modifier.background(CardGray)
                         ) {
                             tiposConsulta.forEach { tipo ->
-                                DropdownMenuItem(
-                                    text = { Text(tipo, color = TextWhite) },
-                                    onClick = {
-                                        tipoConsulta = tipo
-                                        expandedDropdown = false
-                                    },
-                                    modifier = Modifier.background(CardGray)
-                                )
+                                if (tipo != "Seleccione una opción") {
+                                    DropdownMenuItem(
+                                        text = { Text(tipo, color = TextWhite) },
+                                        onClick = {
+                                            tipoConsulta = tipo
+                                            expandedDropdown = false
+                                        },
+                                        modifier = Modifier.background(CardGray)
+                                    )
+                                }
                             }
                         }
                     }
@@ -211,30 +213,86 @@ fun SupportScreen(navController: NavController) {
                     // Botón enviar
                     Button(
                         onClick = {
-                            coroutineScope.launch {
-                                val tipoFormateado = Normalizer.normalize(tipoConsulta, Normalizer.Form.NFD)
-                                    .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
-                                    .replace(" ", "-")
-                                val result = sendSupportRequest(
-                                    titulo,
-                                    email,
-                                    nombre,
-                                    tipoFormateado,
-                                    descripcion
-                                )
-                                if (result == null) {
-                                    snackbarHostState.showSnackbar("Mensaje enviado correctamente.")
-                                } else {
-                                    snackbarHostState.showSnackbar("Error: $result")
+                            // Validar campos
+                            when {
+                                email.isEmpty() -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, introduce tu email")
+                                    }
+                                }
+                                !isValidEmail(email) -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, introduce un email válido")
+                                    }
+                                }
+                                nombre.isEmpty() -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, introduce tu nombre")
+                                    }
+                                }
+                                tipoConsulta == "Seleccione una opción" -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, selecciona un tipo de consulta")
+                                    }
+                                }
+                                titulo.isEmpty() -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, introduce un título para la consulta")
+                                    }
+                                }
+                                descripcion.isEmpty() -> {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, describe tu consulta")
+                                    }
+                                }
+                                else -> {
+                                    isLoading = true
+                                    coroutineScope.launch {
+                                        val tipoFormateado = Normalizer.normalize(tipoConsulta, Normalizer.Form.NFD)
+                                            .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+                                            .lowercase()
+                                            .replace(" ", "-")
+
+                                        val result = sendSupportRequest(
+                                            titulo,
+                                            email,
+                                            nombre,
+                                            tipoFormateado,
+                                            descripcion
+                                        )
+
+                                        isLoading = false
+
+                                        if (result == null) {
+                                            // Éxito - limpiar formulario
+                                            email = ""
+                                            nombre = ""
+                                            tipoConsulta = "Seleccione una opción"
+                                            titulo = ""
+                                            descripcion = ""
+
+                                            snackbarHostState.showSnackbar("Tu consulta ha sido enviada correctamente")
+                                        } else {
+                                            snackbarHostState.showSnackbar("Error: $result")
+                                        }
+                                    }
                                 }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = SliderBlue),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 8.dp)
+                            .padding(top = 8.dp),
+                        enabled = !isLoading
                     ) {
-                        Text("Enviar consulta", fontSize = 16.sp)
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = TextWhite,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        } else {
+                            Text("Enviar consulta", fontSize = 16.sp)
+                        }
                     }
                 }
             }
@@ -242,7 +300,13 @@ fun SupportScreen(navController: NavController) {
     }
 }
 
-// Función de envío
+// Función para validar formato de email
+private fun isValidEmail(email: String): Boolean {
+    val pattern = "[a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+"
+    return email.matches(pattern.toRegex())
+}
+
+// Función de envío con timeout
 suspend fun sendSupportRequest(
     title: String,
     email: String,
@@ -257,10 +321,13 @@ suspend fun sendSupportRequest(
         println("name: $name")
         println("type: $type")
         println("description: $description")
+
         val url = URL("http://galaxy.t2dc.es:3000/contact-support/new")
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Content-Type", "application/json")
+        conn.connectTimeout = 15000 // 15 segundos de timeout
+        conn.readTimeout = 15000
         conn.doOutput = true
 
         val json = JSONObject().apply {
@@ -287,10 +354,10 @@ suspend fun sendSupportRequest(
         if (responseCode in 200..299) {
             null // Éxito
         } else {
-            "Error en la solicitud: $responseCode"
+            "Error en la solicitud: $responseCode - $response"
         }
     } catch (e: Exception) {
         e.printStackTrace()
-        e.message
+        "Error de conexión: ${e.message}"
     }
 }
