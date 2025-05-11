@@ -69,7 +69,7 @@ fun AspectSelector(navController: NavController) {
     // Guardar el aspecto seleccionado en SharedPreferences
     fun saveSkinPreference(skinName: String) {
         with(sharedPreferences.edit()) {
-            putString("selected_skin", "$skinName.png")
+            putString("skin", "$skinName")
             apply()
         }
     }
