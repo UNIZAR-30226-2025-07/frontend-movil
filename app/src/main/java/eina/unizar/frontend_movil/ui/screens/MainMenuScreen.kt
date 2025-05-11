@@ -9,6 +9,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,9 +31,14 @@ import eina.unizar.frontend_movil.R
 import android.content.SharedPreferences
 import eina.unizar.frontend_movil.ui.functions.Functions
 import eina.unizar.frontend_movil.ui.components.AspectSelector
-import eina.unizar.frontend_movil.ui.screens.BattlePassScreen
-import kotlin.apply
 import eina.unizar.frontend_movil.ui.components.BattlePassBar
+import eina.unizar.frontend_movil.ui.theme.CardGray
+import eina.unizar.frontend_movil.ui.theme.SliderBlue
+import kotlin.apply
+
+// Define los colores si no están definidos en el archivo de tema
+private val SliderBlue = Color(0xFF3F37C9) // Color azul para elementos de UI
+private val CardGray = Color(0xFF333333)   // Color gris para tarjetas y fondos
 
 
 @Composable
@@ -107,6 +120,11 @@ fun PlayerProgress(navController: NavController) {
         } else {
             "Guest"
         }
+        val userPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+        val editor = userPrefs.edit()
+        editor.putString("username", username)
+        editor.putString("PlayerID", userId)
+        editor.apply()
     }
 
     DisposableEffect(Unit) {
@@ -166,6 +184,9 @@ fun MainMenuScreen(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
     var token by remember { mutableStateOf(sharedPreferences.getString("access_token", null)) }
+    var showDialog by remember { mutableStateOf(false) }
+    var guestUsername by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     fun checkTokenValidity(context: Context): Boolean {
         val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
@@ -343,12 +364,12 @@ fun MainMenuScreen(navController: NavController) {
             Button(
                 onClick = {
                     if (token == null) {
-                        navController.navigate("play")
+                        showDialog = true
                     } else {
                         navController.navigate("game")
                     }
                 },
-                colors = ButtonDefaults.buttonColors(backgroundColor = animatedColor),
+                colors = ButtonDefaults.buttonColors(containerColor = animatedColor),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 16.dp)
@@ -357,6 +378,69 @@ fun MainMenuScreen(navController: NavController) {
             ) {
                 Text("JUGAR", color = Color.White)
             }
+
+            // Muestra el diálogo para el usuario invitado
+            if (showDialog) {
+                AlertDialog(
+                    onDismissRequest = { /* No permitir cerrar al tocar fuera */ },
+                    title = { Text("Jugar como invitado", color = Color.White) },
+                    text = {
+                        Column {
+                            if (errorMessage != null) {
+                                Text(
+                                    text = errorMessage!!,
+                                    color = Color.Red,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                            }
+                            OutlinedTextField(
+                                value = guestUsername,
+                                onValueChange = { guestUsername = it },
+                                label = { Text("Nombre de usuario") },
+                                singleLine = true,
+                                colors = TextFieldDefaults.colors(
+                                    focusedTextColor = Color.White,
+                                    unfocusedTextColor = Color.White,
+                                    focusedContainerColor = Color.Transparent,
+                                    unfocusedContainerColor = Color.Transparent,
+                                    focusedLabelColor = SliderBlue,
+                                    unfocusedLabelColor = Color.Gray
+                                )
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                if (guestUsername.trim().isEmpty()) {
+                                    errorMessage = "Por favor, introduce un nombre"
+                                } else if (guestUsername.length < 3) {
+                                    errorMessage = "El nombre debe tener al menos 3 caracteres"
+                                } else {
+                                    val userPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                                    val editor = userPrefs.edit()
+                                    editor.putString("username", guestUsername.trim())
+                                    editor.apply()
+                                    showDialog = false
+                                    navController.navigate("game")
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = SliderBlue)
+                        ) {
+                            Text("CONTINUAR")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(onClick = { showDialog = false }) {
+                            Text("Cancelar", color = Color.Gray)
+                        }
+                    },
+                    containerColor = CardGray,
+                    textContentColor = Color.White
+                )
+            }
         }
     }
 }
+
