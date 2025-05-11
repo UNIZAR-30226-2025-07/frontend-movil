@@ -40,7 +40,8 @@ data class Achievement(
     val currentValue: Int,
     val objectiveValue: Int,
     val achieved: Boolean,
-    val xpReward: Int = 50
+    val xpReward: Int = 50,
+    val type: String
 )
 
 class AchievementsViewModel : ViewModel() {
@@ -129,7 +130,8 @@ class AchievementsViewModel : ViewModel() {
                                 currentValue = achievement.getInt("current_value"),
                                 objectiveValue = achievement.getInt("objective_value"),
                                 achieved = achievement.getBoolean("achieved"),
-                                xpReward = achievement.optInt("experience_otorgued", 50)
+                                xpReward = achievement.optInt("experience_otorgued", 50),
+                                type = achievement.getString("type")
                             )
                         )
                     }
@@ -275,8 +277,16 @@ fun AchievementCard(
     achievement: Achievement,
     onClaimClick: () -> Unit
 ) {
-    val progreso = Math.min(achievement.currentValue, achievement.objectiveValue).toFloat()
-    val progress = progreso / achievement.objectiveValue.toFloat()
+    val progress: Float
+
+    if (achievement.type == "timePlayed") {
+        var progreso =
+            (Math.min(achievement.currentValue, achievement.objectiveValue).toFloat()) / 3600.0
+        progress = (progreso / (achievement.objectiveValue.toFloat())/3600.0).toFloat()
+    } else {
+        var progreso = Math.min(achievement.currentValue, achievement.objectiveValue).toFloat()
+        progress = progreso / achievement.objectiveValue.toFloat()
+    }
     val isCompleted = achievement.currentValue >= achievement.objectiveValue
 
     // Definir el color amarillo para usar en el botón y texto
@@ -342,9 +352,15 @@ fun AchievementCard(
                     color = if (isCompleted) SuccessGreen else GreenMessage,
                     trackColor = CardGray
                 )
-
                 Text(
-                    text = "${Math.min(achievement.currentValue, achievement.objectiveValue)}/${achievement.objectiveValue}",
+                    text = if (achievement.type == "timePlayed") {
+                        String.format("%.1f/%.1f",
+                            Math.min(achievement.currentValue / 3600.0, achievement.objectiveValue / 3600.0),
+                            achievement.objectiveValue / 3600.0
+                        )
+                    } else {
+                        "${Math.min(achievement.currentValue, achievement.objectiveValue)}/${achievement.objectiveValue}"
+                    },
                     color = TextWhite.copy(alpha = 0.7f),
                     fontSize = 14.sp
                 )
