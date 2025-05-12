@@ -9,14 +9,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material.AlertDialog
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.OutlinedTextField
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.material.TextButton
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -369,7 +369,7 @@ fun MainMenuScreen(navController: NavController) {
                         navController.navigate("game")
                     }
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = animatedColor),
+                colors = ButtonDefaults.buttonColors(backgroundColor = animatedColor),
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(end = 16.dp, bottom = 16.dp)
@@ -399,11 +399,10 @@ fun MainMenuScreen(navController: NavController) {
                                 onValueChange = { guestUsername = it },
                                 label = { Text("Nombre de usuario") },
                                 singleLine = true,
-                                colors = TextFieldDefaults.colors(
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
-                                    focusedContainerColor = Color.Transparent,
-                                    unfocusedContainerColor = Color.Transparent,
+                                colors = TextFieldDefaults.outlinedTextFieldColors(
+                                    textColor = Color.White, // reemplazar focusedTextColor y unfocusedTextColor
+                                    focusedBorderColor = SliderBlue,
+                                    unfocusedBorderColor = Color.Gray,
                                     focusedLabelColor = SliderBlue,
                                     unfocusedLabelColor = Color.Gray
                                 )
@@ -426,7 +425,7 @@ fun MainMenuScreen(navController: NavController) {
                                     navController.navigate("game")
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = SliderBlue)
+                            colors = ButtonDefaults.buttonColors(backgroundColor = SliderBlue)
                         ) {
                             Text("CONTINUAR")
                         }
@@ -436,8 +435,8 @@ fun MainMenuScreen(navController: NavController) {
                             Text("Cancelar", color = Color.Gray)
                         }
                     },
-                    containerColor = CardGray,
-                    textContentColor = Color.White
+                    backgroundColor = CardGray,
+                    contentColor = Color.White
                 )
             }
         }
