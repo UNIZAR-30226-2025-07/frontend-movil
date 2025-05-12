@@ -178,6 +178,12 @@ class PrivateRoomViewModel : ViewModel() {
             _maxPlayers.value = privateGame.optInt("maxPlayers", 8)
             _leaderId.value = privateGame.optString("leader", "")
 
+            // Guardar el Id del lider en SharedPreferences
+            context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
+                .edit()
+                .putString("LeaderID", _leaderId.value)
+                .apply()
+
             // Obtener jugadores en la partida
             val playersResponse = Functions.getWithHeaders(
                 "private/allPlayers/${_gameId.value}",
@@ -494,6 +500,7 @@ private suspend fun handleScreenExit(
                         .edit()
                         .remove("gameId")
                         .remove("gamePasswd")
+                        .remove("LeaderID")
                         .apply()
                 }
             } catch (e: Exception) {
