@@ -457,7 +457,7 @@ private suspend fun handleScreenExit(
             // Limpiamos también los datos de la partida
             context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
                 .edit()
-                .remove("gameId")
+                //.remove("gameId")
                 .remove("gamePasswd")
                 .apply()
         }

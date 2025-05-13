@@ -131,8 +131,19 @@ fun PlayerProgress(navController: NavController) {
         val userPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
         val editor = userPrefs.edit()
         editor.putString("username", username)
-        editor.putString("PlayerID", userId)
+        if (userId == null) {
+            // Crear un nuevo uuid aleatorio
+            val randomUUID = java.util.UUID.randomUUID().toString()
+            editor.putString("PlayerID", randomUUID)
+        } else {
+            editor.putString("PlayerID", userId)
+        }
         editor.apply()
+        context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
+            .edit()
+            .remove("gameId")
+            .apply()
+
     }
 
     DisposableEffect(Unit) {
