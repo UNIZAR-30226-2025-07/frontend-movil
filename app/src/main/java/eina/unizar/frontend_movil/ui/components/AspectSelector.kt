@@ -34,7 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import kotlin.math.abs
-
+import kotlinx.coroutines.delay
 
 data class AspectItem(
     val id: Int,
@@ -45,11 +45,17 @@ data class AspectItem(
 fun AspectSelector(navController: NavController) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+    val token = sharedPreferences.getString("access_token", null)
 
     var aspects by remember { mutableStateOf(listOf<AspectItem>()) }
     var selectedIndex by remember { mutableStateOf(0) }
 
-    val token = sharedPreferences.getString("access_token", null)
+    // Estado para controlar la navegación
+    var isNavigating by remember { mutableStateOf(false) }
+
+    // Variables para la animación
+    var animationInProgress by remember { mutableStateOf(false) }
+    var animationDirection by remember { mutableStateOf(0) }
 
     // Cargar aspectos al iniciar el componente
     LaunchedEffect(token) {
@@ -63,6 +69,29 @@ fun AspectSelector(navController: NavController) {
             }
         } else {
             aspects = listOf(AspectItem(1, "Aspecto Básico"))
+        }
+    }
+
+    // Función para manejar el intento de cambio de aspecto
+    fun handleAspectChange(direction: Int) {
+        if (token == null) {
+            if (!isNavigating) {
+                isNavigating = true
+                navController.navigate("login_screen") {
+                    // Evitar múltiples copias de la misma ruta en la pila
+                    launchSingleTop = true
+                    // Restaurar el estado cuando se regresa
+                    restoreState = true
+                }
+                // Resetear el estado después de un tiempo
+                CoroutineScope(Dispatchers.Main).launch {
+                    delay(500) // Debounce de 500ms
+                    isNavigating = false
+                }
+            }
+        } else if (!animationInProgress && aspects.isNotEmpty()) {
+            animationDirection = direction
+            animationInProgress = true
         }
     }
 
@@ -84,8 +113,6 @@ fun AspectSelector(navController: NavController) {
         }
     }
 
-    var animationInProgress by remember { mutableStateOf(false) }
-    var animationDirection by remember { mutableStateOf(0) }
     val animatedOffset by animateFloatAsState(
         targetValue = if (animationInProgress) {
             if (animationDirection > 0) 300f else -300f
@@ -107,17 +134,27 @@ fun AspectSelector(navController: NavController) {
             .padding(20.dp)
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDragEnd = {
-                        // No hacemos nada aquí, la animación ya está en progreso
-                    },
+                    onDragEnd = { /* No requerido */ },
                     onDragStart = { /* No requerido */ },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        // Solo iniciar la animación si no hay una en curso
-                        if (!animationInProgress && aspects.size > 1) {
-                            val horizontalDrag = dragAmount.x
-                            // Verificar que el deslizamiento sea suficientemente horizontal
-                            if (abs(horizontalDrag) > abs(dragAmount.y) && abs(horizontalDrag) > 10f) {
+                        // Verificar que el deslizamiento sea suficientemente horizontal
+                        if (abs(dragAmount.x) > abs(dragAmount.y) && abs(dragAmount.x) > 10f) {
+                            // Verificar si el usuario está autenticado
+                            if (token == null) {
+                                if (!isNavigating) {
+                                    isNavigating = true
+                                    navController.navigate("login_screen") {
+                                        launchSingleTop = true
+                                        restoreState = true
+                                    }
+                                    CoroutineScope(Dispatchers.Main).launch {
+                                        delay(500)
+                                        isNavigating = false
+                                    }
+                                }
+                            } else if (!animationInProgress && aspects.size > 1) {
+                                val horizontalDrag = dragAmount.x
                                 animationDirection = if (horizontalDrag < 0) 1 else -1
                                 animationInProgress = true
                             }
@@ -126,6 +163,7 @@ fun AspectSelector(navController: NavController) {
                 )
             }
     ) {
+        // El resto del código permanece igual...
         Column(
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -149,10 +187,7 @@ fun AspectSelector(navController: NavController) {
                         text = "<",
                         fontSize = 30.sp,
                         modifier = Modifier.clickable {
-                            if (!animationInProgress && aspects.isNotEmpty()) {
-                                animationDirection = -1
-                                animationInProgress = true
-                            }
+                            handleAspectChange(-1)
                         }
                     )
                 }
@@ -186,10 +221,7 @@ fun AspectSelector(navController: NavController) {
                         text = ">",
                         fontSize = 30.sp,
                         modifier = Modifier.clickable {
-                            if (!animationInProgress && aspects.isNotEmpty()) {
-                                animationDirection = 1
-                                animationInProgress = true
-                            }
+                            handleAspectChange(1)
                         }
                     )
                 }

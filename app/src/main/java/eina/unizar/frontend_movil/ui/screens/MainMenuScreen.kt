@@ -34,7 +34,15 @@ import eina.unizar.frontend_movil.ui.components.AspectSelector
 import eina.unizar.frontend_movil.ui.components.BattlePassBar
 import eina.unizar.frontend_movil.ui.theme.CardGray
 import eina.unizar.frontend_movil.ui.theme.SliderBlue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import kotlin.apply
+import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.font.FontWeight
+
 
 // Define los colores si no están definidos en el archivo de tema
 private val SliderBlue = Color(0xFF3F37C9) // Color azul para elementos de UI
@@ -144,6 +152,7 @@ fun PlayerProgress(navController: NavController) {
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
+        // Columna para la imagen de usuario
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.width(40.dp)
@@ -161,20 +170,50 @@ fun PlayerProgress(navController: NavController) {
                         }
                     }
             )
+        }
+
+        // Espacio entre el icono y el recuadro
+        Spacer(modifier = Modifier.width(12.dp))
+
+        // Recuadro para el nombre de usuario
+        Box(
+            modifier = Modifier
+                .height(30.dp)
+                .width(100.dp)
+                .background(
+                    color = Color(0xFF3F37C9).copy(alpha = 0.7f),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                )
+                .clickable {
+                    if (sharedPreferences.getString("access_token", null) != null) {
+                        navController.navigate("profile_settings")
+                    } else {
+                        navController.navigate("login_screen")
+                    }
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            // Calcular tamaño de fuente dinámico basado en longitud
+            val fontSize = when {
+                username.length <= 7 -> 16.sp
+                username.length <= 10 -> 14.sp
+                username.length <= 13 -> 13.sp
+                else -> 8.sp
+            }
+
             Text(
                 text = username,
                 color = Color.White,
-                fontSize = 12.sp,
-                modifier = Modifier.padding(top = 4.dp)
+                fontSize = fontSize,
+                maxLines = 1,
+                overflow = TextOverflow.Clip,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 4.dp)
             )
         }
+
+        // Espacio que separa el componente de usuario del resto
         Spacer(modifier = Modifier.width(16.dp))
-        /*
-        LinearProgressIndicator(
-            progress = 0.7f,
-            modifier = Modifier.height(8.dp)
-        )
-        */
     }
 }
 
@@ -376,67 +415,118 @@ fun MainMenuScreen(navController: NavController) {
                     .height(80.dp)
                     .width(240.dp)
             ) {
-                Text("JUGAR", color = Color.White)
+                Text("JUGAR", color = Color.White, fontSize = 24.sp, letterSpacing = 4.sp)
             }
 
-            // Muestra el diálogo para el usuario invitado
             if (showDialog) {
                 AlertDialog(
-                    onDismissRequest = { /* No permitir cerrar al tocar fuera */ },
-                    title = { Text("Jugar como invitado", color = Color.White) },
+                    onDismissRequest = { showDialog = false },
+                    backgroundColor = Color(0xFF282032),
+                    shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                    title = {
+                        Text(
+                            text = "JUGAR COMO INVITADO",
+                            color = Color.White,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 2.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    },
                     text = {
-                        Column {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            // Mensaje de error con animación si existe
                             if (errorMessage != null) {
                                 Text(
                                     text = errorMessage!!,
-                                    color = Color.Red,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(bottom = 8.dp)
+                                    color = Color(0xFFF72585),
+                                    fontSize = 14.sp,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(bottom = 12.dp)
                                 )
                             }
+
+                            // Campo de texto personalizado
                             OutlinedTextField(
                                 value = guestUsername,
-                                onValueChange = { guestUsername = it },
+                                onValueChange = {
+                                    guestUsername = it
+                                    errorMessage = null  // Limpiar mensaje al escribir
+                                },
                                 label = { Text("Nombre de usuario") },
                                 singleLine = true,
                                 colors = TextFieldDefaults.outlinedTextFieldColors(
-                                    textColor = Color.White, // reemplazar focusedTextColor y unfocusedTextColor
-                                    focusedBorderColor = SliderBlue,
-                                    unfocusedBorderColor = Color.Gray,
-                                    focusedLabelColor = SliderBlue,
-                                    unfocusedLabelColor = Color.Gray
-                                )
+                                    textColor = Color.White,
+                                    cursorColor = Color(0xFF3F37C9),
+                                    focusedBorderColor = Color(0xFF3F37C9),
+                                    unfocusedBorderColor = Color(0xFF3F37C9).copy(alpha = 0.5f),
+                                    focusedLabelColor = Color(0xFF3F37C9),
+                                    unfocusedLabelColor = Color(0xFF3F37C9).copy(alpha = 0.5f),
+                                    backgroundColor = Color(0xFF1A1721)
+                                ),
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                if (guestUsername.trim().isEmpty()) {
-                                    errorMessage = "Por favor, introduce un nombre"
-                                } else if (guestUsername.length < 3) {
-                                    errorMessage = "El nombre debe tener al menos 3 caracteres"
-                                } else {
-                                    val userPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
-                                    val editor = userPrefs.edit()
-                                    editor.putString("username", guestUsername.trim())
-                                    editor.apply()
-                                    showDialog = false
-                                    navController.navigate("game")
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(backgroundColor = SliderBlue)
+                    buttons = {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("CONTINUAR")
+                            // Botón Cancelar
+                            Button(
+                                onClick = { showDialog = false },
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = Color(0xFF282032)
+                                ),
+                                border = BorderStroke(
+                                    width = 1.dp,
+                                    color = Color(0xFF3F37C9).copy(alpha = 0.7f)
+                                ),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                                    .padding(end = 8.dp)
+                            ) {
+                                Text("CANCELAR", color = Color.White, fontSize = 14.sp)
+                            }
+
+                            // Botón Continuar
+                            Button(
+                                onClick = {
+                                    if (guestUsername.trim().isEmpty()) {
+                                        errorMessage = "Por favor, introduce un nombre"
+                                    } else if (guestUsername.length < 3) {
+                                        errorMessage = "El nombre debe tener al menos 3 caracteres"
+                                    } else {
+                                        val userPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                                        val editor = userPrefs.edit()
+                                        editor.putString("username", guestUsername.trim())
+                                        editor.apply()
+                                        showDialog = false
+                                        navController.navigate("play")
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    backgroundColor = Color(0xFF3F37C9)
+                                ),
+                                shape = androidx.compose.foundation.shape.RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(48.dp)
+                                    .padding(start = 8.dp)
+                            ) {
+                                Text("CONTINUAR", color = Color.White, fontSize = 14.sp)
+                            }
                         }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDialog = false }) {
-                            Text("Cancelar", color = Color.Gray)
-                        }
-                    },
-                    backgroundColor = CardGray,
-                    contentColor = Color.White
+                    }
                 )
             }
         }
