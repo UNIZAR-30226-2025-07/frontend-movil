@@ -18,6 +18,9 @@ import androidx.navigation.NavController
 import eina.unizar.frontend_movil.ui.functions.Functions
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 
 @Composable
 fun ForgotPasswordScreen(navController: NavController) {
@@ -25,14 +28,10 @@ fun ForgotPasswordScreen(navController: NavController) {
     val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
-    var showCodeInput by remember { mutableStateOf(false) }
-    var verificationCode by remember { mutableStateOf("") }
-    var newPassword by remember { mutableStateOf("") }
-    var confirmPassword by remember { mutableStateOf("") }
-
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var successMessage by remember { mutableStateOf("") }
+    var emailSent by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -55,8 +54,7 @@ fun ForgotPasswordScreen(navController: NavController) {
                     modifier = Modifier.padding(bottom = 32.dp)
                 )
 
-                // Formulario inicial para solicitar código
-                if (!showCodeInput) {
+                if (!emailSent) {
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it.trim() },
@@ -83,15 +81,6 @@ fun ForgotPasswordScreen(navController: NavController) {
                         )
                     }
 
-                    if (successMessage.isNotEmpty()) {
-                        Text(
-                            text = successMessage,
-                            color = Color.Green,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
                     Button(
                         onClick = {
                             if (email.isEmpty()) {
@@ -101,17 +90,15 @@ fun ForgotPasswordScreen(navController: NavController) {
 
                             isLoading = true
                             errorMessage = ""
-                            successMessage = ""
 
                             coroutineScope.launch {
                                 val result = requestPasswordReset(email)
                                 isLoading = false
 
                                 if (result) {
-                                    successMessage = "Código enviado a tu correo electrónico"
-                                    showCodeInput = true
+                                    emailSent = true
                                 } else {
-                                    errorMessage = "No se pudo enviar el código. Verifica tu correo"
+                                    errorMessage = "No se pudo enviar el correo. Verifica tu dirección"
                                 }
                             }
                         },
@@ -125,149 +112,82 @@ fun ForgotPasswordScreen(navController: NavController) {
                         if (isLoading) {
                             CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
                         } else {
-                            Text("Enviar Código", color = Color.White)
+                            Text("Enviar Correo", color = Color.White)
                         }
                     }
-
+                    // En la parte del else (cuando emailSent es true)
                 } else {
-                    // Formulario para verificar código y cambiar contraseña
-                    OutlinedTextField(
-                        value = verificationCode,
-                        onValueChange = { verificationCode = it.trim() },
-                        label = { Text("Código de Verificación") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    // Mensaje de confirmación con scroll
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.White,
-                            focusedBorderColor = Color(0xFF7209B7),
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color(0xFF7209B7),
-                            unfocusedLabelColor = Color.Gray
-                        )
-                    )
-
-                    OutlinedTextField(
-                        value = newPassword,
-                        onValueChange = { newPassword = it },
-                        label = { Text("Nueva Contraseña") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.White,
-                            focusedBorderColor = Color(0xFF7209B7),
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color(0xFF7209B7),
-                            unfocusedLabelColor = Color.Gray
-                        )
-                    )
-
-                    OutlinedTextField(
-                        value = confirmPassword,
-                        onValueChange = { confirmPassword = it },
-                        label = { Text("Confirmar Contraseña") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = PasswordVisualTransformation(),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            textColor = Color.White,
-                            focusedBorderColor = Color(0xFF7209B7),
-                            unfocusedBorderColor = Color.Gray,
-                            focusedLabelColor = Color(0xFF7209B7),
-                            unfocusedLabelColor = Color.Gray
-                        )
-                    )
-
-                    if (errorMessage.isNotEmpty()) {
-                        Text(
-                            text = errorMessage,
-                            color = Color.Red,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
-                    if (successMessage.isNotEmpty()) {
-                        Text(
-                            text = successMessage,
-                            color = Color.Green,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                            if (verificationCode.isEmpty()) {
-                                errorMessage = "Por favor, introduce el código de verificación"
-                                return@Button
-                            }
-
-                            if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-                                errorMessage = "Por favor, completa todos los campos"
-                                return@Button
-                            }
-
-                            if (newPassword != confirmPassword) {
-                                errorMessage = "Las contraseñas no coinciden"
-                                return@Button
-                            }
-
-                            if (!validatePassword(newPassword)) {
-                                errorMessage = "La contraseña debe tener al menos 7 caracteres, una mayúscula, un número y un símbolo"
-                                return@Button
-                            }
-
-                            isLoading = true
-                            errorMessage = ""
-                            successMessage = ""
-
-                            coroutineScope.launch {
-                                val result = resetPassword(email, verificationCode, newPassword)
-                                isLoading = false
-
-                                if (result) {
-                                    successMessage = "Contraseña actualizada correctamente"
-                                    // Esperar un momento y navegar a login
-                                    kotlinx.coroutines.delay(2000)
-                                    navController.navigate("login_screen") {
-                                        popUpTo("login_screen") { inclusive = true }
-                                    }
-                                } else {
-                                    errorMessage = "No se pudo restablecer la contraseña. Verifica el código"
-                                }
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF7209B7)),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp)
-                            .padding(vertical = 8.dp),
-                        enabled = !isLoading
+                            .verticalScroll(rememberScrollState()) // Añadir scroll vertical
+                            .padding(vertical = 16.dp)
                     ) {
-                        if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp)
-                        } else {
-                            Text("Restablecer Contraseña", color = Color.White)
+                        Text(
+                            text = "¡Correo enviado!",
+                            color = Color.Green,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = "Hemos enviado instrucciones para recuperar tu contraseña a:",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Text(
+                            text = email,
+                            color = Color(0xFF7209B7),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Text(
+                            text = "Por favor, revisa tu bandeja de entrada y sigue las instrucciones del correo.",
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            textAlign = TextAlign.Center
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Button(
+                            onClick = {
+                                navController.navigate("login_screen") {
+                                    popUpTo("login_screen") { inclusive = true }
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF7209B7)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp)
+                        ) {
+                            Text("Volver al Login", color = Color.White)
                         }
                     }
                 }
 
-                TextButton(
-                    onClick = { navController.navigateUp() },
-                    modifier = Modifier.padding(top = 16.dp)
-                ) {
-                    Text(
-                        text = "Volver",
-                        color = Color(0xFF7209B7),
-                        fontSize = 16.sp
-                    )
+                if (!emailSent) {
+                    TextButton(
+                        onClick = { navController.navigateUp() },
+                        modifier = Modifier.padding(top = 16.dp)
+                    ) {
+                        Text(
+                            text = "Volver",
+                            color = Color(0xFF7209B7),
+                            fontSize = 16.sp
+                        )
+                    }
                 }
             }
         }
@@ -279,13 +199,11 @@ suspend fun requestPasswordReset(email: String): Boolean {
         val jsonObject = JSONObject()
         jsonObject.put("email", email)
 
-        // Usamos el endpoint correcto según el script web
         val response = Functions.postWithBody(
             endpoint = "auth/forgot-password",
             body = jsonObject.toString()
         )
 
-        // Registrar la respuesta para depuración
         android.util.Log.d("ForgotPassword", "Respuesta: $response")
 
         response != null
