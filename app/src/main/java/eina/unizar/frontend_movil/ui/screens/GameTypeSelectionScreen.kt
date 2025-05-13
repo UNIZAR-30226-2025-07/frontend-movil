@@ -1,8 +1,11 @@
 package eina.unizar.frontend_movil.ui.navigation
 
 import MainMenuScreen
+import android.content.ContentValues.TAG
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -38,6 +41,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.protobuf.ByteString
 import eina.unizar.frontend_movil.ui.functions.Functions
 import eina.unizar.frontend_movil.ui.theme.*
 import eina.unizar.frontend_movil.ui.models.Friend
@@ -48,6 +52,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.util.UUID
+import eina.unizar.frontend_movil.BuildConfig
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,10 +137,38 @@ fun GameTypeSelectionScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 // Botón Partida Pública
+                val context = LocalContext.current
                 CompactGameButton(
                     text = "PÚBLICA",
                     icon = Icons.Default.PlayArrow,
-                    onClick = { navController.navigate("game") },
+                    onClick = {
+                        val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                        val sharedPreferencesSkin = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+                        val userId = sharedPreferences.getString("PlayerID", null) ?: UUID.randomUUID().toString()
+                        val userName = sharedPreferences.getString("username", "noname")
+                        val rawSkinName = sharedPreferencesSkin.getString("skin", null) ?: "real_zaragoza"
+                        val skinName = rawSkinName
+                            .lowercase()
+                            .replace(Regex("[áäàâã]"), "a")
+                            .replace(Regex("[éëèê]"), "e")
+                            .replace(Regex("[íïìî]"), "i")
+                            .replace(Regex("[óöòôõ]"), "o")
+                            .replace(Regex("[úüùû]"), "u")
+                            .replace(Regex("[ñ]"), "n")
+                            .replace(" ", "_")
+                        val serverUrl = "ws://10.0.2.2:8080/ws" // O usa SharedPrefsUtil si lo tienes configurable
+                        val gameId = 0; // partida pública
+                        val intent = android.content.Intent(context, eina.unizar.frontend_movil.cliente_movil.ui.GameActivity::class.java).apply {
+                            putExtra("serverUrl", serverUrl)
+                            putExtra("userName", userName)
+                            putExtra("userId", userId)
+                            putExtra("skinName", skinName)
+                            putExtra("gameId", gameId)
+                            if (context !is android.app.Activity) {
+                                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                            }
+                        }
+                        context.startActivity(intent)},
                     color = GreenMessage.copy(alpha = 0.8f)
                 )
 

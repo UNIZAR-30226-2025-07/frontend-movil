@@ -522,7 +522,7 @@ fun MainMenuScreen(navController: NavController) {
                                         editor.putString("username", guestUsername.trim())
                                         editor.apply()
                                         showDialog = false
-                                        navController.navigate("play")
+                                        navController.navigate("game")
                                     }
                                 },
                                 colors = ButtonDefaults.buttonColors(

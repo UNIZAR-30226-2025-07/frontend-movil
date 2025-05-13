@@ -22,4 +22,26 @@ object SharedPrefsUtil {
         val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         return sharedPreferences.getString("userId", null)
     }
+
+    // NUEVO: Guardar y obtener el nombre de usuario
+    fun saveUserName(context: Context, userName: String) {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("userName", userName).apply()
+    }
+
+    fun getUserName(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString("userName", null)
+    }
+
+    // NUEVO: Guardar y obtener el skin
+    fun saveSkinName(context: Context, skinName: String) {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("skinName", skinName).apply()
+    }
+
+    fun getSkinName(context: Context): String? {
+        val sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return sharedPreferences.getString("skinName", null)
+    }
 }
