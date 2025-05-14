@@ -2,7 +2,6 @@ package eina.unizar.frontend_movil.cliente_movil.networking
 
 import android.util.Log
 import eina.unizar.frontend_movil.cliente_movil.utils.Constants
-import org.json.JSONObject
 import okhttp3.*
 import galaxy.Galaxy.Operation
 import galaxy.Galaxy.OperationType
@@ -11,7 +10,6 @@ import galaxy.Galaxy.Vector2D
 import okio.ByteString
 import java.nio.ByteBuffer
 import java.util.UUID
-import kotlin.text.toInt
 
 class WebSocketClient(private val serverUrl: String, private val listener: WebSocketListener) {
 
@@ -59,7 +57,7 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
         if (!ok) Log.e(TAG, "Error al enviar movimiento")
     }
 
-    fun sendEatFood(x: Float, y: Float, radius: Float) {
+    fun sendEatFood(x: Float, y: Float, radius: Double) {
         val eatFoodOperation = Operation.newBuilder()
             .setOperationType(OperationType.OpEatFood)
             .setEatFoodOperation(
@@ -80,7 +78,7 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
         if (!ok) Log.e(TAG, "Error al enviar operación de comer comida")
     }
 
-    fun sendEatPlayer(playerEatenId: String, newRadius: Float) {
+    fun sendEatPlayer(playerEatenId: String, newRadius: Double) {
         val uuid = UUID.fromString(playerEatenId)
         val buffer = ByteBuffer.wrap(ByteArray(16))
         buffer.putLong(uuid.mostSignificantBits)
@@ -104,6 +102,7 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
     }
 
     fun sendLeaveGame(){
+        Log.d("GameActivity", "ADIOS ME VOY")
         val leaveOperation = Operation.newBuilder()
             .setOperationType(OperationType.OpLeave)
             .setLeaveOperation(
@@ -141,7 +140,7 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
         val playerIdBytes = com.google.protobuf.ByteString.copyFrom(buffer.array())
         val skin = skinName
             ?.replace("basico", "básico")
-            ?.replace(Regex("[gn]"), "ñ")
+            ?.replace(Regex("gn"), "ñ")
             ?.replace("_", " ")
             ?.lowercase()
             ?.replace(Regex("(^|\\s)([a-záéíóúñ])")) { matchResult ->
@@ -154,7 +153,7 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
                     .setUsername(userName)
                     .setColor(randomColor) // Asigna el color generado
                     .apply {
-                        if (!skin.isNullOrEmpty()) setSkin(skin)
+                        if (!skin.isNullOrEmpty()) setSkin(skin+".png")
                     }
                     .setGameID(gameId)
                     .build()

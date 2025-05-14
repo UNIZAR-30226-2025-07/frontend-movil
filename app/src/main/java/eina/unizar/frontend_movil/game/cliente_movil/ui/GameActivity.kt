@@ -1,19 +1,15 @@
 package eina.unizar.frontend_movil.cliente_movil.ui
 
 import MainMenuScreen
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.rememberNavController
 import eina.unizar.frontend_movil.R
 import eina.unizar.frontend_movil.cliente_movil.game.GameView
@@ -35,17 +31,13 @@ import okio.ByteString
 import eina.unizar.frontend_movil.cliente_movil.model.Food
 import eina.unizar.frontend_movil.cliente_movil.model.Player
 import eina.unizar.frontend_movil.cliente_movil.utils.ColorUtils
-import org.json.JSONArray
 import eina.unizar.frontend_movil.cliente_movil.utils.Constants
 import galaxy.Galaxy.PauseEvent
-import io.ktor.utils.io.charsets.Charset
 import java.nio.ByteBuffer
 import java.util.UUID
-import kotlin.collections.addAll
-import kotlin.collections.remove
-import kotlin.toString
 import kotlin.jvm.java
 
+const val FOOD_RADIUS = 20f
 
 class GameActivity : AppCompatActivity(), GameView.MoveListener {
 
@@ -62,6 +54,8 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
 
     private var isLeader: Boolean = false
     private var isPrivateGame: Boolean = false
+
+    private var isJoinned: Boolean = false
 
 
     private val foodItems = mutableListOf<Food>()
@@ -124,6 +118,10 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
                 try {
                     val event = Event.parseFrom(bytes.toByteArray())
                     Log.d(TAG, "Evento recibido: $event")
+                    if (!isJoinned && event.eventType != EventType.EvJoin) {
+                        Log.d(TAG, "Esperando a unirse al juego...")
+                        return
+                    }
                     when (event.eventType) {
                         EventType.EvNewPlayer -> handleNewPlayer(event.newPlayerEvent)
                         EventType.EvNewFood -> handleNewFood(event.newFoodEvent)
@@ -143,6 +141,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
 
             override fun onClosing(ws: WebSocket, code: Int, reason: String) {
                 Log.d(TAG, "onClosing: $code / $reason")
+                webSocketClient.sendLeaveGame()
                 ws.close(1000, null)
                 runOnUiThread {
                     Toast.makeText(this@GameActivity,
@@ -154,6 +153,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
 
             override fun onFailure(ws: WebSocket, t: Throwable, response: Response?) {
                 Log.e(TAG, "onFailure: ${t.message}")
+                webSocketClient.sendLeaveGame()
                 runOnUiThread {
                     Toast.makeText(this@GameActivity,
                         "Error: ${t.message}. Intentando reconectar...",
@@ -267,6 +267,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             .replace(Regex("[úüùû]"), "u")
             .replace(Regex("[ñ]"), "gn")
             .replace(" ", "_")
+            .replace(".png", "")
 
         val player = Player(
             id = playerId,
@@ -276,7 +277,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             color = rgbToArgb(event.color),
             skinName = if (skin.isNotEmpty()) skin else "aspecto_basico",
             username = event.username,
-            score = event.radius.toInt()
+            score = event.radius.toInt()/10
         )
         runOnUiThread {
             gameView.updatePlayers(player)
@@ -353,8 +354,10 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
         val player = gameView.getPlayer(playerId)
         if (player != null) {
             player.radius = event.radius.toFloat()
-            player.score = player.radius.toInt()
+            player.score = player.radius.toInt()/10
+            Log.d("TAG", "SCORE Y RADIO ACTUALIZADO: ${player.score} ${player.radius}")
             runOnUiThread {
+                gameView.updateScoreRadius(player.id, player.score, player.radius)
                 gameView.invalidate() // Redibuja el juego
             }
         }
@@ -383,6 +386,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     private fun handleJoin(event: JoinEvent) {
+        isJoinned = true
         val bytes = event.playerID.toByteArray()
         val bb = ByteBuffer.wrap(bytes)
         val uuid = UUID(bb.long, bb.long)
@@ -429,11 +433,12 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             val playerArea = Math.PI * player.radius * player.radius
             val foodArea = Math.PI * food.radius * food.radius
             val newArea = playerArea + foodArea
-            val newRadius = player.radius +1 //Math.sqrt(newArea / Math.PI).toFloat()
+            val newRadius = Math.sqrt((player.radius * player.radius + FOOD_RADIUS * FOOD_RADIUS).toDouble()) * 1.0002
+            player.radius = newRadius.toFloat()
             val foodId = "${food.x.toInt()},${food.y.toInt()}"
             gameView.removeIfFood(foodId)
             webSocketClient.sendEatFood(food.x, food.y, newRadius)
-            //player.score += 1
+            player.score = player.radius.toInt() / 10
         }
     }
 
@@ -444,11 +449,12 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             val playerArea = Math.PI * player.radius * player.radius
             val otherArea = Math.PI * other.radius * other.radius
             val newArea = playerArea + otherArea
-            val newRadius = Math.sqrt(newArea / Math.PI).toFloat()
+            val newRadius = Math.sqrt((player.radius * player.radius + other.radius * other.radius).toDouble()) * 1.0002 //Math.sqrt(newArea / Math.PI).toFloat()
             val playerId = other.id
+            player.radius = newRadius.toFloat()
             gameView.removePlayer(playerId)
             webSocketClient.sendEatPlayer(other.id, newRadius)
-            //player.score += player.radius.toInt()
+            player.score = player.radius.toInt() / 10
         }
     }
 
