@@ -20,4 +20,16 @@
         android:text="Reconectar"
         android:visibility="gone" />
 
+    <!-- Botón de pausa (solo para líder en partida privada) -->
+    <Button
+        android:id="@+id/btnPause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pausar"
+        android:background="#A847A7"
+        android:textColor="#FFFFFF"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="32dp" />
+
 </RelativeLayout>

@@ -63,6 +63,7 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.Job
+import java.util.UUID
 
 
 // ViewModel para la sala privada
@@ -717,10 +718,35 @@ private fun markPlayerReady(
                         withContext(Dispatchers.Main) {
                             Toast.makeText(context, "¡La partida está iniciando!", Toast.LENGTH_SHORT).show()
                             Log.d("PrivateRoom", "Enlace de juego: $gameLink")
+                            val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                            val sharedPreferencesSkin = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+                            val userId = sharedPreferences.getString("PlayerID", null) ?: UUID.randomUUID().toString()
+                            val userName = sharedPreferences.getString("username", "noname")
+                            val rawSkinName = sharedPreferencesSkin.getString("skin", null) ?: "aspecto_basico"
+                            val skinName = rawSkinName
+                                .lowercase()
+                                .replace(Regex("[áäàâã]"), "a")
+                                .replace(Regex("[éëèê]"), "e")
+                                .replace(Regex("[íïìî]"), "i")
+                                .replace(Regex("[óöòôõ]"), "o")
+                                .replace(Regex("[úüùû]"), "u")
+                                .replace(Regex("[ñ]"), "gn")
+                                .replace(" ", "_")
+                            val serverUrl = "ws://galaxy.t2dc.es:4441/ws"
+                            val intent = Intent(context, eina.unizar.frontend_movil.cliente_movil.ui.GameActivity::class.java).apply {
+                                putExtra("serverUrl", serverUrl)
+                                putExtra("userName", userName)
+                                putExtra("userId", userId)
+                                putExtra("skinName", skinName)
+                                putExtra("gameId", gameId.toInt())
+                                putExtra("isLeader", false)
+                                if (context !is android.app.Activity) {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                            }
+                            context.startActivity(intent)
 
-                            //val intent = Intent(Intent.ACTION_VIEW, Uri.parse(gameLink))
-                            //context.startActivity(intent)
-                            navController.navigate("game")
+                            //navController.navigate("game")
                         }
 
                         gameStarted = true
@@ -845,7 +871,33 @@ private fun startGame(
 
                             // En lugar de lanzar la URL directamente, usar la función que maneja los enlaces de localhost
                             //openGameLink(context, gameLink)
-                            navController.navigate("game")
+                            val sharedPreferences = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
+                            val sharedPreferencesSkin = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+                            val userId = sharedPreferences.getString("PlayerID", null) ?: UUID.randomUUID().toString()
+                            val userName = sharedPreferences.getString("username", "noname")
+                            val rawSkinName = sharedPreferencesSkin.getString("skin", null) ?: "aspecto_basico"
+                            val skinName = rawSkinName
+                                .lowercase()
+                                .replace(Regex("[áäàâã]"), "a")
+                                .replace(Regex("[éëèê]"), "e")
+                                .replace(Regex("[íïìî]"), "i")
+                                .replace(Regex("[óöòôõ]"), "o")
+                                .replace(Regex("[úüùû]"), "u")
+                                .replace(Regex("[ñ]"), "gn")
+                                .replace(" ", "_")
+                            val serverUrl = "ws://galaxy.t2dc.es:4441/ws"
+                            val intent = Intent(context, eina.unizar.frontend_movil.cliente_movil.ui.GameActivity::class.java).apply {
+                                putExtra("serverUrl", serverUrl)
+                                putExtra("userName", userName)
+                                putExtra("userId", userId)
+                                putExtra("skinName", skinName)
+                                putExtra("gameId", gameId.toInt())
+                                putExtra("isLeader", true)
+                                if (context !is android.app.Activity) {
+                                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                }
+                            }
+                            context.startActivity(intent)
                         }
 
                         gameStarted = true
