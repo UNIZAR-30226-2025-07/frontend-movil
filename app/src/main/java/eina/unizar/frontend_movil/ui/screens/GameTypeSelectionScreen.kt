@@ -154,9 +154,9 @@ fun GameTypeSelectionScreen(navController: NavController) {
                             .replace(Regex("[íïìî]"), "i")
                             .replace(Regex("[óöòôõ]"), "o")
                             .replace(Regex("[úüùû]"), "u")
-                            .replace(Regex("[ñ]"), "n")
+                            .replace(Regex("[ñ]"), "gn")
                             .replace(" ", "_")
-                        val serverUrl = "ws://galaxy.t2dc.es:4440/ws"
+                        val serverUrl = /*"ws://10.0.2.2:4040/ws"*/ "ws://galaxy.t2dc.es:4440/ws"
                         val gameId = 0 // partida pública
                         val intent = android.content.Intent(context, eina.unizar.frontend_movil.cliente_movil.ui.GameActivity::class.java).apply {
                             putExtra("serverUrl", serverUrl)
@@ -164,6 +164,7 @@ fun GameTypeSelectionScreen(navController: NavController) {
                             putExtra("userId", userId)
                             putExtra("skinName", skinName)
                             putExtra("gameId", gameId)
+                            putExtra("isLeader", false)
                             if (context !is android.app.Activity) {
                                 addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                             }
