@@ -30,12 +30,12 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Recompensa gratuita -->
+        <!-- android:background="@drawable/reward_background" debajo del weight -->
         <FrameLayout
             android:id="@+id/free_reward_container"
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:background="@drawable/reward_background"
             android:layout_marginEnd="8dp">
 
             <ImageView
@@ -47,12 +47,12 @@
         </FrameLayout>
 
         <!-- Recompensa premium -->
+        <!-- android:background="@drawable/premium_reward_background" debajo de weight -->
         <FrameLayout
             android:id="@+id/premium_reward_container"
             android:layout_width="0dp"
             android:layout_height="80dp"
             android:layout_weight="1"
-            android:background="@drawable/premium_reward_background"
             android:layout_marginStart="8dp">
 
             <ImageView
