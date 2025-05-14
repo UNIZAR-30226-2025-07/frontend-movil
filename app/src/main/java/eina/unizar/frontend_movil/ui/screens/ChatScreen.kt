@@ -507,7 +507,7 @@ fun ChatScreen(navController: NavController, userId: String?, friendId: String?,
                 trailingIcon = {
                     IconButton(
                         onClick = {
-                            if (messageText.isNotBlank() && userId != null && friendId != null) {
+                            if (messageText.isNotBlank() && userId != null && friendId != null && !Functions.contienePalabraOfensiva(messageText)) {
                                 // Enviar mensaje a través de WebSocket
                                 webSocketClient.value?.sendMessage(messageText, userId, friendId)
                                 messageText = ""
