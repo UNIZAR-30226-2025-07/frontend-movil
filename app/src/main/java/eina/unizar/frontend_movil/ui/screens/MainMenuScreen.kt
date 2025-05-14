@@ -142,6 +142,7 @@ fun PlayerProgress(navController: NavController) {
         context.getSharedPreferences("game_prefs", Context.MODE_PRIVATE)
             .edit()
             .remove("gameId")
+            .remove("LeaderID")
             .apply()
 
     }
