@@ -1,12 +1,20 @@
 package eina.unizar.frontend_movil.cliente_movil.ui
 
+import MainMenuScreen
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.View
 import android.widget.Button
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.rememberNavController
 import eina.unizar.frontend_movil.R
 import eina.unizar.frontend_movil.cliente_movil.game.GameView
 import eina.unizar.frontend_movil.cliente_movil.networking.WebSocketClient
@@ -29,12 +37,14 @@ import eina.unizar.frontend_movil.cliente_movil.model.Player
 import eina.unizar.frontend_movil.cliente_movil.utils.ColorUtils
 import org.json.JSONArray
 import eina.unizar.frontend_movil.cliente_movil.utils.Constants
+import galaxy.Galaxy.PauseEvent
 import io.ktor.utils.io.charsets.Charset
 import java.nio.ByteBuffer
 import java.util.UUID
 import kotlin.collections.addAll
 import kotlin.collections.remove
 import kotlin.toString
+import kotlin.jvm.java
 
 
 class GameActivity : AppCompatActivity(), GameView.MoveListener {
@@ -42,6 +52,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     private lateinit var gameView: GameView
     private lateinit var webSocketClient: WebSocketClient
     private lateinit var btnReconnect: Button
+    private lateinit var btnPause: Button  // Botón de pausa para el líder
 
     private var userId: String = ""
     private var userName: String = ""
@@ -49,10 +60,15 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     private var skinName: String? = null
     private var gameId: Int = 0
 
+    private var isLeader: Boolean = false
+    private var isPrivateGame: Boolean = false
+
+
     private val foodItems = mutableListOf<Food>()
 
     // Último estado completo recibido
     private var gameState: JSONObject? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,9 +78,10 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
         intent.extras?.let { b ->
             userId    = b.getString("userId", "")
             userName  = b.getString("userName", "")
-            serverUrl = b.getString("serverUrl", "ws://10.0.2.2:8080/ws")
+            serverUrl = b.getString("serverUrl", null)
             skinName = b.getString("skinName", null)
             gameId = b.getInt("gameId", 0)
+            isLeader = b.getBoolean("isLeader", false)
         }
 
         if (userId.isEmpty() || userName.isEmpty() || serverUrl.isEmpty()) {
@@ -73,9 +90,20 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             return
         }
 
+        isPrivateGame = gameId != 0
+
         gameView     = findViewById(R.id.GameView)
         btnReconnect = findViewById(R.id.btnReconnect)
+        btnPause = findViewById(R.id.btnPause)  // Botón de pausa
         gameView.setMoveListener(this)
+
+        btnPause.visibility = if (isPrivateGame && isLeader) View.VISIBLE else View.GONE
+        // Configuramos la acción del botón de pausa
+        if (isPrivateGame && isLeader){
+            btnPause.setOnClickListener {
+                pauseGame()
+            }
+        }
 
         // Preparamos el WebSocketListener inline
         val listener = object : WebSocketListener() {
@@ -103,8 +131,9 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
                         EventType.EvPlayerGrow -> handlePlayerGrow(event.playerGrowEvent)
                         EventType.EvDestroyFood -> handleDestroyFood(event.destroyFoodEvent)
                         EventType.EvDestroyPlayer -> handleDestroyPlayer(event.destroyPlayerEvent)
+                        EventType.EvPause -> handlePause(event.pauseEvent)
                         EventType.EvJoin -> handleJoin(event.joinEvent)
-                        //EventType.EvPause -> handlePause(event.pauseEvent)
+                        EventType.EvPause -> handlePause(event.pauseEvent)
                         else -> Log.d(TAG, "Unhandled event type: ${event.eventType}")
                     }
                 } catch (e: Exception) {
@@ -141,6 +170,17 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             webSocketClient.connect()
         }
         connectToServer()
+    }
+
+    // Método para actualizar la visibilidad del botón de pausa
+    private fun updatePauseButtonVisibility() {
+        btnPause.visibility = if (isLeader && isPrivateGame) View.VISIBLE else View.GONE
+    }
+
+    // Método para pausar la partida
+    private fun pauseGame() {
+        webSocketClient.sendPauseGame()
+        Toast.makeText(this, "Pausando partida...", Toast.LENGTH_SHORT).show()
     }
 
     private fun reconnectWithDelay(delayMillis: Long = 3000) {
@@ -217,13 +257,24 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
         val bb = ByteBuffer.wrap(bytes)
         val uuid = UUID(bb.long, bb.long)
         val playerId = uuid.toString()
+
+        val skin = event.skin
+            .lowercase()
+            .replace(Regex("[áäàâã]"), "a")
+            .replace(Regex("[éëèê]"), "e")
+            .replace(Regex("[íïìî]"), "i")
+            .replace(Regex("[óöòôõ]"), "o")
+            .replace(Regex("[úüùû]"), "u")
+            .replace(Regex("[ñ]"), "gn")
+            .replace(" ", "_")
+
         val player = Player(
             id = playerId,
             x = event.position.x.toFloat(),
             y = event.position.y.toFloat(),
             radius = event.radius.toFloat(),
             color = rgbToArgb(event.color),
-            skinName = if (event.skin.isNotEmpty()) event.skin else "aspecto_basico",
+            skinName = if (skin.isNotEmpty()) skin else "aspecto_basico",
             username = event.username,
             score = event.radius.toInt()
         )
@@ -357,6 +408,20 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
         }
     }
 
+    private fun handlePause(event: PauseEvent) {
+        // Implementar lógica para manejar la pausa del juego
+        Log.d(TAG, "Juego pausado")
+        // Vuelve al menú principal
+        runOnUiThread {
+            val intent = Intent(this, MainMenuActivity::class.java).apply {
+                // Limpia el task actual y crea uno nuevo con MainMenuActivity en la raíz
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+        }
+    }
+
     fun sendEatFood(food: Food) {
         val player = gameView.currentPlayerId?.let { gameView.getPlayer(it) }
         if (player != null) {
@@ -365,6 +430,8 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             val foodArea = Math.PI * food.radius * food.radius
             val newArea = playerArea + foodArea
             val newRadius = player.radius +1 //Math.sqrt(newArea / Math.PI).toFloat()
+            val foodId = "${food.x.toInt()},${food.y.toInt()}"
+            gameView.removeIfFood(foodId)
             webSocketClient.sendEatFood(food.x, food.y, newRadius)
             //player.score += 1
         }
@@ -378,12 +445,30 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             val otherArea = Math.PI * other.radius * other.radius
             val newArea = playerArea + otherArea
             val newRadius = Math.sqrt(newArea / Math.PI).toFloat()
+            val playerId = other.id
+            gameView.removePlayer(playerId)
             webSocketClient.sendEatPlayer(other.id, newRadius)
             //player.score += player.radius.toInt()
         }
     }
 
+
     companion object {
         private const val TAG = "GameActivity"
     }
 }
+
+
+class MainMenuActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            // 1️⃣ Crea el NavController
+            val navController = rememberNavController()
+
+            // 2️⃣ Pásalo al composable
+            MainMenuScreen(navController = navController)
+        }
+    }
+}
+
