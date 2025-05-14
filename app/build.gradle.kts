@@ -1,8 +1,14 @@
+import com.google.protobuf.gradle.*
+import org.gradle.kotlin.dsl.create
+
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     id("kotlinx-serialization")
+    id("com.google.protobuf")
 }
+
+
 
 android {
     namespace = "eina.unizar.frontend_movil"
@@ -18,6 +24,18 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    flavorDimensions.add("server")
+    productFlavors {
+        create("emu") {
+            dimension = "server"
+            buildConfigField("String", "SERVER_URL", "\"ws://10.0.2.2:8080/ws\"")
+        }
+        create("device") {
+            dimension = "server"
+            buildConfigField("String", "SERVER_URL", "\"ws://192.168.100.63:8080/ws\"")
         }
     }
 
@@ -39,16 +57,53 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
-    packaging {
+    packagingOptions {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
 }
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.1"
+    }
+    plugins {
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.56.1"
+        }
+    }
+    generateProtoTasks {
+        all().forEach {
+            it.plugins {
+                create("grpc")
+            }
+            it.builtins {
+                create("java") {
+                    option("lite")
+                }
+            }
+        }
+    }
+}
+
+// Ensure proto generation runs before Kotlin compilation for each variant
+/*afterEvaluate {
+    android.applicationVariants.all { variant ->
+        def variantName = variant.name.capitalize()
+        def compileTask = tasks.named("compile${variantName}Kotlin")
+        def protoTask   = tasks.named("generate${variantName}Proto")
+
+        compileTask.configure {
+            dependsOn(protoTask)
+        }
+    }
+}*/
 
 dependencies {
 
@@ -94,5 +149,39 @@ dependencies {
 
     //WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
+
+    implementation ("androidx.core:core-ktx:1.10.1")
+    implementation ("androidx.appcompat:appcompat:1.6.1")
+    implementation ("com.google.android.material:material:1.9.0")
+    implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
+
+    // WebSocket para la comunicación con el servidor
+    implementation ("org.java-websocket:Java-WebSocket:1.5.3")
+
+    // Gson para el manejo de JSON
+    implementation ("com.google.code.gson:gson:2.10.1")
+
+    // Socket.IO for WebSocket communication
+    implementation("io.socket:socket.io-client:2.1.0") {
+        exclude(group = "org.json", module = "json")
+    }
+    implementation ("org.json:json:20220924")
+
+    implementation ("com.squareup.okhttp3:okhttp:4.11.0")
+
+    // Coroutines para operaciones asíncronas
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+
+    // Protobuf y gRPC
+    implementation ("com.google.protobuf:protobuf-javalite:3.25.1")
+    implementation ("com.google.protobuf:protobuf-kotlin-lite:3.25.1")
+    implementation ("io.grpc:grpc-protobuf-lite:1.56.1")
+    implementation ("io.grpc:grpc-stub:1.56.1")
+    implementation ("io.grpc:grpc-okhttp:1.56.1") // Para Android
+
+
+    testImplementation ("junit:junit:4.13.2")
+    androidTestImplementation ("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation ("androidx.test.espresso:espresso-core:3.5.1")
 
 }
