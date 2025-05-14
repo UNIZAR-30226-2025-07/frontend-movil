@@ -117,16 +117,35 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
 
     }
 
-    fun sendPauseGame(){}
+    fun sendPauseGame(){
+        val pauseOperation = Operation.newBuilder()
+            .setOperationType(OperationType.OpPause)
+            .setPauseOperation(
+                galaxy.Galaxy.PauseOperation.newBuilder()
+            )
+            .build()
+
+        val messageBytes = pauseOperation.toByteArray()
+        val ok = webSocket?.send(ByteString.of(*messageBytes)) ?: false
+        if (!ok) Log.e(TAG, "Error al enviar operación de pausar partida")
+    }
+
 
     /** Emite petición de unirse al juego */
-    //fun joinGame(playerId: ByteArray, userName: String, skinName: String?, gameId: Int) {
     fun joinGame(playerId: UUID, userName: String, skinName: String?, gameId: Int) {
+        Log.d(TAG, "JOIN GAME: $gameId")
         val randomColor = (0xFFFFFF and (Math.random() * 0xFFFFFF).toInt()) // Genera un color aleatorio
         val buffer = ByteBuffer.wrap(ByteArray(16))
         buffer.putLong(playerId.mostSignificantBits)
         buffer.putLong(playerId.leastSignificantBits)
         val playerIdBytes = com.google.protobuf.ByteString.copyFrom(buffer.array())
+        val skin = skinName
+            ?.replace("basico", "básico")
+            ?.replace(Regex("[gn]"), "ñ")
+            ?.replace("_", " ")
+            ?.lowercase()
+            ?.replace(Regex("(^|\\s)([a-záéíóúñ])")) { matchResult ->
+                matchResult.value.uppercase()}
         val joinOperation = Operation.newBuilder()
             .setOperationType(OperationType.OpJoin)
             .setJoinOperation(
@@ -135,7 +154,7 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
                     .setUsername(userName)
                     .setColor(randomColor) // Asigna el color generado
                     .apply {
-                        if (!skinName.isNullOrEmpty()) setSkin(skinName)
+                        if (!skin.isNullOrEmpty()) setSkin(skin)
                     }
                     .setGameID(gameId)
                     .build()

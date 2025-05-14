@@ -293,15 +293,7 @@ private fun joinPrivateGame(
 
             Log.d("JoinPrivateGame", "Unido exitosamente a la partida: $joinResponse")
 
-            // Si la unión es exitosa, lanza la GameActivity
             withContext(Dispatchers.Main) {
-                val intent = android.content.Intent(context, eina.unizar.frontend_movil.cliente_movil.ui.GameActivity::class.java).apply {
-                    putExtra("userId", userId ?: "")
-                    putExtra("userName", userName)
-                    putExtra("serverUrl", "ws://10.0.2.2:8080/ws") // urlServer
-                    putExtra("skinName", skinName)
-                }
-                context.startActivity(intent)
                 callback(true, "Unido correctamente")
             }
 
