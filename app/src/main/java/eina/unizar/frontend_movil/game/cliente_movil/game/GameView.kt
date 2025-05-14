@@ -288,8 +288,12 @@ class GameView @JvmOverloads constructor(
             cameraX = player.x
             cameraY = player.y
 
-            // Ajustar el zoom para que sea más cercano
-            scale = max(1f, min(2.5f, 50f / player.radius)) // Aumenta el zoom máximo
+            // Ajustar el zoom
+            val minZoom = 0.8f
+            val maxZoom = 2.5f
+            val baseRadius = 30f // Radio de referencia para zoom normal
+            scale = (maxZoom * (baseRadius / player.radius)).coerceIn(minZoom, maxZoom)
+
         }
     }
 
@@ -305,9 +309,9 @@ class GameView @JvmOverloads constructor(
         val player = currentPlayerId?.let { players[it] }
         if (player != null) {
             // Movimiento directo según la dirección del joystick
-            val baseSpeed = 12f
-            val minSpeed = 5f
-            val speed = max(minSpeed, baseSpeed - player.radius / 80f)
+            val baseSpeed = 5f
+            val minSpeed = 1f
+            val speed = max(minSpeed, baseSpeed - (player.radius / 80f))
             if (moveDirX != 0f || moveDirY != 0f) {
                 player.x += moveDirX * speed
                 player.y += moveDirY * speed
@@ -379,61 +383,72 @@ class GameView @JvmOverloads constructor(
         foodItems.clear()
     }
 
+    fun updateScoreRadius(playerId: String, score: Int, radius: Float) {
+        players[playerId]?.score = score
+        players[playerId]?.radius = radius
+    }
 
-    fun dibujarMinimapa(canvas: Canvas){
+
+    fun dibujarMinimapa(canvas: Canvas) {
         val minimapWidth = 220f
         val minimapHeight = 220f
         val minimapPadding = 32f
         val minimapLeft = width - minimapWidth - minimapPadding
         val minimapTop = height - minimapHeight - minimapPadding
 
-        // Fondo del minimapa
+        // Fondo y borde del minimapa (igual que antes)
         val minimapBgPaint = Paint().apply {
             color = Color.argb(180, 30, 30, 30)
             style = Paint.Style.FILL
         }
         canvas.drawRoundRect(
-            minimapLeft,
-            minimapTop,
-            minimapLeft + minimapWidth,
-            minimapTop + minimapHeight,
-            30f,
-            30f,
-            minimapBgPaint
+            minimapLeft, minimapTop,
+            minimapLeft + minimapWidth, minimapTop + minimapHeight,
+            30f, 30f, minimapBgPaint
         )
-
-        // Borde del minimapa
         val minimapBorderPaint = Paint().apply {
             color = Color.WHITE
             style = Paint.Style.STROKE
             strokeWidth = 3f
         }
         canvas.drawRoundRect(
-            minimapLeft,
-            minimapTop,
-            minimapLeft + minimapWidth,
-            minimapTop + minimapHeight,
-            30f,
-            30f,
-            minimapBorderPaint
+            minimapLeft, minimapTop,
+            minimapLeft + minimapWidth, minimapTop + minimapHeight,
+            30f, 30f, minimapBorderPaint
         )
 
-        // Dibuja el punto del currentPlayer
+        val scaleX = minimapWidth / gameWidth
+        val scaleY = minimapHeight / gameHeight
+
+        // Dibuja todos los jugadores en rojo
+        val playerDotPaint = Paint().apply {
+            color = Color.RED
+            style = Paint.Style.FILL
+            isAntiAlias = true
+        }
+        players.forEach { (id, player) ->
+            if (id != currentPlayerId) {
+                val x = minimapLeft + player.x * scaleX
+                val y = minimapTop + player.y * scaleY
+                canvas.drawCircle(x, y, 3f, playerDotPaint)
+            }
+        }
+
+        // Dibuja el jugador actual en verde
         val currentPlayer = currentPlayerId?.let { players[it] }
         if (currentPlayer != null) {
-            val scaleX = minimapWidth / gameWidth
-            val scaleY = minimapHeight / gameHeight
-            val playerMinimapX = minimapLeft + currentPlayer.x * scaleX
-            val playerMinimapY = minimapTop + currentPlayer.y * scaleY
-
-            val playerDotPaint = Paint().apply {
+            val x = minimapLeft + currentPlayer.x * scaleX
+            val y = minimapTop + currentPlayer.y * scaleY
+            val currentPaint = Paint().apply {
                 color = Color.GREEN
                 style = Paint.Style.FILL
                 isAntiAlias = true
             }
-            canvas.drawCircle(playerMinimapX, playerMinimapY, 10f, playerDotPaint)
+            canvas.drawCircle(x, y, 5f, currentPaint)
         }
     }
+
+
     fun render(canvas: Canvas) {
         if (canvas != null) {
 
@@ -557,7 +572,7 @@ class GameView @JvmOverloads constructor(
                 )
             }
 
-            val topPlayers = players.values.sortedByDescending { it.score }.take(10)
+            val topPlayers = players.values.sortedByDescending { it.score }.take(5)
             if (topPlayers.isNotEmpty()) {
                 val leaderboardPaint = Paint().apply {
                     color = Color.argb(180, 30, 30, 30)
