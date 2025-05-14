@@ -32,6 +32,9 @@ import eina.unizar.frontend_movil.cliente_movil.utils.Constants
 import io.ktor.utils.io.charsets.Charset
 import java.nio.ByteBuffer
 import java.util.UUID
+import kotlin.collections.addAll
+import kotlin.collections.remove
+import kotlin.toString
 
 
 class GameActivity : AppCompatActivity(), GameView.MoveListener {
@@ -45,6 +48,8 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     private var serverUrl: String = ""
     private var skinName: String? = null
     private var gameId: Int = 0
+
+    private val foodItems = mutableListOf<Food>()
 
     // Último estado completo recibido
     private var gameState: JSONObject? = null
@@ -194,8 +199,12 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        val playerId = gameView.currentPlayerId
+        if (playerId != null) {
+            webSocketClient.sendLeaveGame()
+        }
         webSocketClient.close()
+        super.onDestroy()
     }
 
     // Utilidad para convertir color RGB a ARGB (opacidad completa)
@@ -204,8 +213,12 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     private fun handleNewPlayer(event: NewPlayerEvent) {
+        val bytes = event.playerID.toByteArray()
+        val bb = ByteBuffer.wrap(bytes)
+        val uuid = UUID(bb.long, bb.long)
+        val playerId = uuid.toString()
         val player = Player(
-            id = event.playerID.toStringUtf8(),
+            id = playerId,
             x = event.position.x.toFloat(),
             y = event.position.y.toFloat(),
             radius = event.radius.toFloat(),
@@ -230,7 +243,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
 
             val foodItems = foodList.map { food ->
                 Food(
-                    id = "${food.position.x},${food.position.y}",
+                    id = "${food.position.x.toInt()},${food.position.y.toInt()}",
                     x = food.position.x.toFloat(),
                     y = food.position.y.toFloat(),
                     radius = 20f, // Ajusta si el radio es configurable
@@ -239,8 +252,11 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             }
 
             runOnUiThread {
+                val currentIds = gameView.foodItems.map { it.id }.toSet()
+                val foodsToAdd = foodItems.filter { it.id !in currentIds }
                 gameView.updateFoodItems(foodItems)
-                gameView.invalidate()
+                /*gameView.foodItems.addAll(foodsToAdd)
+                gameView.invalidate()*/
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error al procesar evento EvNewFood: ${e.message}")
@@ -248,7 +264,10 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     private fun handlePlayerMove(event: PlayerMoveEvent) {
-        val playerId = event.playerID.toStringUtf8()
+        val bytes = event.playerID.toByteArray()
+        val bb = ByteBuffer.wrap(bytes)
+        val uuid = UUID(bb.long, bb.long)
+        val playerId = uuid.toString()
         Log.e(TAG, "ID del jugador: $playerId")
         val player = gameView.getPlayer(playerId)
 
@@ -276,7 +295,10 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     private fun handlePlayerGrow(event: PlayerGrowEvent) {
-        val playerId = event.playerID.toStringUtf8()
+        val bytes = event.playerID.toByteArray()
+        val bb = ByteBuffer.wrap(bytes)
+        val uuid = UUID(bb.long, bb.long)
+        val playerId = uuid.toString()
         val player = gameView.getPlayer(playerId)
         if (player != null) {
             player.radius = event.radius.toFloat()
@@ -288,16 +310,18 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     private fun handleDestroyFood(event: DestroyFoodEvent) {
-        val foodId = "${event.position.x},${event.position.y}"
-        gameView.removeIfFood(foodId)
-        //gameView.foodItems.removeIf { it.id == foodId }
+        val foodId = "${event.position.x.toInt()},${event.position.y.toInt()}"
         runOnUiThread {
+            gameView.removeIfFood(foodId)
             gameView.invalidate() // Redibuja el juego
         }
     }
 
     private fun handleDestroyPlayer(event: DestroyPlayerEvent) {
-        val playerId = event.playerID.toStringUtf8()
+        val bytes = event.playerID.toByteArray()
+        val bb = ByteBuffer.wrap(bytes)
+        val uuid = UUID(bb.long, bb.long)
+        val playerId = uuid.toString()
         gameView.removePlayer(playerId)
         runOnUiThread {
             gameView.invalidate() // Redibuja el juego
@@ -308,7 +332,10 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     }
 
     private fun handleJoin(event: JoinEvent) {
-        val playerId = event.playerID.toStringUtf8()
+        val bytes = event.playerID.toByteArray()
+        val bb = ByteBuffer.wrap(bytes)
+        val uuid = UUID(bb.long, bb.long)
+        val playerId = uuid.toString()
         val spawnX = event.position.x.toFloat()
         val spawnY = event.position.y.toFloat()
 
@@ -325,6 +352,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
         )
         runOnUiThread {
             gameView.updatePlayers(player)
+            gameView.initializeFood()
             gameView.invalidate()
         }
     }
@@ -336,9 +364,9 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             val playerArea = Math.PI * player.radius * player.radius
             val foodArea = Math.PI * food.radius * food.radius
             val newArea = playerArea + foodArea
-            val newRadius = Math.sqrt(newArea / Math.PI).toFloat()
+            val newRadius = player.radius +1 //Math.sqrt(newArea / Math.PI).toFloat()
             webSocketClient.sendEatFood(food.x, food.y, newRadius)
-            player.score += 1
+            //player.score += 1
         }
     }
 
@@ -351,7 +379,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             val newArea = playerArea + otherArea
             val newRadius = Math.sqrt(newArea / Math.PI).toFloat()
             webSocketClient.sendEatPlayer(other.id, newRadius)
-            player.score += player.radius.toInt()
+            //player.score += player.radius.toInt()
         }
     }
 

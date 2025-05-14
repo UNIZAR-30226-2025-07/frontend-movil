@@ -32,8 +32,12 @@ import kotlin.text.toFloat
 import kotlin.times
 import android.graphics.BitmapFactory
 import kotlin.collections.addAll
+import kotlin.collections.remove
+import kotlin.div
 import kotlin.text.clear
 import kotlin.text.get
+import kotlin.text.toFloat
+import kotlin.times
 
 class GameView @JvmOverloads constructor(
     context: Context,
@@ -47,11 +51,11 @@ class GameView @JvmOverloads constructor(
     private val textPaint = Paint()
 
     private val players = mutableMapOf<String, Player>()
-    private val foodItems = mutableListOf<Food>()
+    val foodItems = mutableListOf<Food>()
 
 
-    private var gameWidth = 5000f  // Default game world width
-    private var gameHeight = 5000f // Default game world height
+    private var gameWidth = 10000f  // Default game world width
+    private var gameHeight = 10000f // Default game world height
     private var cameraX = 0f
     private var cameraY = 0f
     private var scale = 1f
@@ -63,6 +67,13 @@ class GameView @JvmOverloads constructor(
 
     private var moveDirX: Float = 0f
     private var moveDirY: Float = 0f
+
+    private val estrellas = List(2000) {
+        Pair(
+            (Math.random() * gameWidth).toFloat(),
+            (Math.random() * gameHeight).toFloat()
+        )
+    }
 
     public var currentPlayerId: String? = null
         private set
@@ -81,7 +92,15 @@ class GameView @JvmOverloads constructor(
     }
 
     fun removeIfFood(id: String){
-        foodItems.removeIf { it.id == id }
+        //foodItems.removeIf { it.id == id }
+        val iterator = foodItems.iterator()
+        while (iterator.hasNext()) {
+            val food = iterator.next()
+            if (food.id == id) {
+                iterator.remove()
+                break
+            }
+        }
     }
 
     fun setPlayers(playersList: List<Player>) {
@@ -282,8 +301,6 @@ class GameView @JvmOverloads constructor(
         moveListener = listener
     }
 
-    // Dentro de GameView.kt
-
     fun update() {
         val player = currentPlayerId?.let { players[it] }
         if (player != null) {
@@ -337,6 +354,7 @@ class GameView @JvmOverloads constructor(
                 }
             }
 
+            //Colisión con otros jugadores
             for ((id, other) in players) {
                 if (id != currentPlayerId) {
                     val dist = sqrt((currentPlayer.x - other.x) * (currentPlayer.x - other.x) +
@@ -354,10 +372,68 @@ class GameView @JvmOverloads constructor(
 
     fun updateFoodItems(newFood: List<Food>) {
         // Supón que tienes una variable foodItems: MutableList<Food> en GameView
-        foodItems.clear()
         foodItems.addAll(newFood)
     }
 
+    fun initializeFood(){
+        foodItems.clear()
+    }
+
+
+    fun dibujarMinimapa(canvas: Canvas){
+        val minimapWidth = 220f
+        val minimapHeight = 220f
+        val minimapPadding = 32f
+        val minimapLeft = width - minimapWidth - minimapPadding
+        val minimapTop = height - minimapHeight - minimapPadding
+
+        // Fondo del minimapa
+        val minimapBgPaint = Paint().apply {
+            color = Color.argb(180, 30, 30, 30)
+            style = Paint.Style.FILL
+        }
+        canvas.drawRoundRect(
+            minimapLeft,
+            minimapTop,
+            minimapLeft + minimapWidth,
+            minimapTop + minimapHeight,
+            30f,
+            30f,
+            minimapBgPaint
+        )
+
+        // Borde del minimapa
+        val minimapBorderPaint = Paint().apply {
+            color = Color.WHITE
+            style = Paint.Style.STROKE
+            strokeWidth = 3f
+        }
+        canvas.drawRoundRect(
+            minimapLeft,
+            minimapTop,
+            minimapLeft + minimapWidth,
+            minimapTop + minimapHeight,
+            30f,
+            30f,
+            minimapBorderPaint
+        )
+
+        // Dibuja el punto del currentPlayer
+        val currentPlayer = currentPlayerId?.let { players[it] }
+        if (currentPlayer != null) {
+            val scaleX = minimapWidth / gameWidth
+            val scaleY = minimapHeight / gameHeight
+            val playerMinimapX = minimapLeft + currentPlayer.x * scaleX
+            val playerMinimapY = minimapTop + currentPlayer.y * scaleY
+
+            val playerDotPaint = Paint().apply {
+                color = Color.GREEN
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
+            canvas.drawCircle(playerMinimapX, playerMinimapY, 10f, playerDotPaint)
+        }
+    }
     fun render(canvas: Canvas) {
         if (canvas != null) {
 
@@ -384,6 +460,21 @@ class GameView @JvmOverloads constructor(
             }
             canvas.drawRect(0f, 0f, Constants.DEFAULT_WORLD_WIDTH.toFloat(), Constants.DEFAULT_WORLD_HEIGHT.toFloat(), boundaryPaint)
 
+            // Dibujar las estrellas del fondo
+            val starPaint = Paint().apply {
+                color = Color.WHITE
+                style = Paint.Style.FILL
+                isAntiAlias = true
+            }
+            for ((x, y) in estrellas) {
+                /*// Convertir coordenadas del mundo a pantalla usando cámara y escala
+                val screenX = ((x - cameraX) * scale + width / 2f)
+                val screenY = ((y - cameraY) * scale + height / 2f)
+                // Solo dibujar si está en pantalla
+                if (screenX in 0f..width.toFloat() && screenY in 0f..height.toFloat()) {*/
+                    canvas.drawCircle(x, y, 4f, starPaint)
+                //}
+            }
 
             // Dibujar la comida
             for (food in foodItems) {
@@ -392,7 +483,8 @@ class GameView @JvmOverloads constructor(
             }
 
             // Dibujar los jugadores
-            for ((id, player) in players) {
+            val jugadoresOrdenados = players.values.sortedBy { it.radius }
+            for (player in jugadoresOrdenados) {
                 val skinBitmap = player.skinName?.let { getSkinBitmap(it) }
                 if (skinBitmap != null) {
                     val left = player.x - player.radius
@@ -406,7 +498,6 @@ class GameView @JvmOverloads constructor(
                     canvas.drawCircle(player.x, player.y, player.radius, playersPaint)
                 }
                 // Dibujar el nombre del jugador
-                if (id == currentPlayerId) {
                     textPaint.textSize = 28f
                     textPaint.textAlign = Paint.Align.CENTER
                     canvas.drawText(
@@ -415,7 +506,6 @@ class GameView @JvmOverloads constructor(
                         player.y - player.radius - 10,
                         textPaint
                     )
-                }
             }
 
             // Restaurar el estado del canvas
@@ -518,6 +608,9 @@ class GameView @JvmOverloads constructor(
                 }
             }
         }
+
+        // Dibuja el minimapa
+        dibujarMinimapa(canvas)
     }
 
 
