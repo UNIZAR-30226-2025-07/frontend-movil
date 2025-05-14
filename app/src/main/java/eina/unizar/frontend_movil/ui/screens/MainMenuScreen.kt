@@ -517,6 +517,8 @@ fun MainMenuScreen(navController: NavController) {
                                         errorMessage = "Por favor, introduce un nombre"
                                     } else if (guestUsername.length < 3) {
                                         errorMessage = "El nombre debe tener al menos 3 caracteres"
+                                    } else if (Functions.contienePalabraOfensiva(guestUsername.trim())) {
+                                        errorMessage= "El nombre contiene palabras ofensivas"
                                     } else {
                                         val userPrefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
                                         val editor = userPrefs.edit()

@@ -226,4 +226,35 @@ object Functions {
             null
         }
     }
+
+    /**
+     * Verifica si un texto contiene palabras ofensivas
+     * @param texto El texto a verificar
+     * @return true si contiene palabras ofensivas, false en caso contrario
+     */
+    fun contienePalabraOfensiva(texto: String): Boolean {
+        // Lista de palabras inapropiadas en español
+        val palabrasProhibidas = listOf(
+            "puta", "puto", "mierda", "joder", "cabron", "cabrón",
+            "gilipollas", "cojones", "coño", "imbecil", "imbécil",
+            "marica", "maricon", "maricón", "polla", "follar", "jodido",
+            "pendejo", "idiota", "capullo", "hijoputa", "hijodeputa",
+            "subnormal", "retrasado", "mongolico", "mongólico",
+            "hijo de puta", "joder", "cabrona", "cabronazo"
+        )
+
+        val textoNormalizado = texto.lowercase()
+            .replace("0", "o")
+            .replace("1", "i")
+            .replace("3", "e")
+            .replace("4", "a")
+            .replace("5", "s")
+            .replace("$", "s")
+            .replace("@", "a")
+
+        // Verifica si contiene alguna palabra de la lista
+        return palabrasProhibidas.any { palabra ->
+            textoNormalizado.contains(palabra)
+        }
+    }
 }
