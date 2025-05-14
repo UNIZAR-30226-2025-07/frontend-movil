@@ -81,20 +81,43 @@ class WebSocketClient(private val serverUrl: String, private val listener: WebSo
     }
 
     fun sendEatPlayer(playerEatenId: String, newRadius: Float) {
-        val eatPlayerOperation = galaxy.Galaxy.Operation.newBuilder()
-            .setOperationType(galaxy.Galaxy.OperationType.OpEatPlayer)
+        val uuid = UUID.fromString(playerEatenId)
+        val buffer = ByteBuffer.wrap(ByteArray(16))
+        buffer.putLong(uuid.mostSignificantBits)
+        buffer.putLong(uuid.leastSignificantBits)
+        val playerEatenBytes = com.google.protobuf.ByteString.copyFrom(buffer.array())
+
+
+        val eatPlayerOperation = Operation.newBuilder()
+            .setOperationType(OperationType.OpEatPlayer)
             .setEatPlayerOperation(
                 galaxy.Galaxy.EatPlayerOperation.newBuilder()
-                    .setPlayerEaten(com.google.protobuf.ByteString.copyFromUtf8(playerEatenId))
+                    .setPlayerEaten(playerEatenBytes)
                     .setNewRadius(newRadius.toInt())
                     .build()
             )
             .build()
 
         val messageBytes = eatPlayerOperation.toByteArray()
-        val ok = webSocket?.send(okio.ByteString.of(*messageBytes)) ?: false
+        val ok = webSocket?.send(ByteString.of(*messageBytes)) ?: false
         if (!ok) Log.e(TAG, "Error al enviar operación de comer jugador")
     }
+
+    fun sendLeaveGame(){
+        val leaveOperation = Operation.newBuilder()
+            .setOperationType(OperationType.OpLeave)
+            .setLeaveOperation(
+                galaxy.Galaxy.LeaveOperation.newBuilder()
+            )
+            .build()
+
+        val messageBytes = leaveOperation.toByteArray()
+        val ok = webSocket?.send(ByteString.of(*messageBytes)) ?: false
+        if (!ok) Log.e(TAG, "Error al enviar operación de abandonar partida")
+
+    }
+
+    fun sendPauseGame(){}
 
     /** Emite petición de unirse al juego */
     //fun joinGame(playerId: ByteArray, userName: String, skinName: String?, gameId: Int) {

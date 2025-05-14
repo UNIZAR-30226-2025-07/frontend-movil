@@ -156,8 +156,8 @@ fun GameTypeSelectionScreen(navController: NavController) {
                             .replace(Regex("[úüùû]"), "u")
                             .replace(Regex("[ñ]"), "n")
                             .replace(" ", "_")
-                        val serverUrl = "ws://10.0.2.2:8080/ws" // O usa SharedPrefsUtil si lo tienes configurable
-                        val gameId = 0; // partida pública
+                        val serverUrl = "ws://galaxy.t2dc.es:4440/ws"
+                        val gameId = 0 // partida pública
                         val intent = android.content.Intent(context, eina.unizar.frontend_movil.cliente_movil.ui.GameActivity::class.java).apply {
                             putExtra("serverUrl", serverUrl)
                             putExtra("userName", userName)
