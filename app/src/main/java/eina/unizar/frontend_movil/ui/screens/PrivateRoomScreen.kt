@@ -64,6 +64,7 @@ import org.json.JSONObject
 import androidx.activity.compose.BackHandler
 import kotlinx.coroutines.Job
 import java.util.UUID
+import kotlin.random.Random
 
 
 // ViewModel para la sala privada
@@ -744,6 +745,8 @@ private fun markPlayerReady(
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                             }
+                            val time = Random.nextLong(50, 501)
+                            delay(time) // Esperar 2 segundos antes de abrir el enlace
                             context.startActivity(intent)
 
                             //navController.navigate("game")
@@ -897,6 +900,8 @@ private fun startGame(
                                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 }
                             }
+                            val time = Random.nextLong(50, 501)
+                            delay(time) // Esperar 2 segundos antes de abrir el enlace
                             context.startActivity(intent)
                         }
 

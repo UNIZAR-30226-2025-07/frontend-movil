@@ -58,7 +58,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     private var isJoinned: Boolean = false
 
 
-    private val foodItems = mutableListOf<Food>()
+    private val deadPlayers = mutableListOf<UUID>()
 
     // Último estado completo recibido
     private var gameState: JSONObject? = null
@@ -181,6 +181,14 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
     private fun pauseGame() {
         webSocketClient.sendPauseGame()
         Toast.makeText(this, "Pausando partida...", Toast.LENGTH_SHORT).show()
+        runOnUiThread {
+            val intent = Intent(this, MainMenuActivity::class.java).apply {
+                // Limpia el task actual y crea uno nuevo con MainMenuActivity en la raíz
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+        }
     }
 
     private fun reconnectWithDelay(delayMillis: Long = 3000) {
@@ -343,6 +351,15 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
             }
         } else {
             Log.e(TAG, "Jugador no encontrado: ID=$playerId")
+            if (deadPlayers.find { it == uuid } == null) {
+                val currentplayer = gameView.currentPlayerId
+                val name = gameView.players[currentplayer]?.username
+                val skin = gameView.players[currentplayer]?.skinName
+                if (name != null){
+                    webSocketClient.joinGame(uuid, name, skin, 1)
+                }
+                Log.e(TAG, "Reconnecting")
+            }
         }
     }
 
@@ -376,6 +393,7 @@ class GameActivity : AppCompatActivity(), GameView.MoveListener {
         val bb = ByteBuffer.wrap(bytes)
         val uuid = UUID(bb.long, bb.long)
         val playerId = uuid.toString()
+        deadPlayers.add(uuid)
         gameView.removePlayer(playerId)
         runOnUiThread {
             gameView.invalidate() // Redibuja el juego
@@ -473,7 +491,7 @@ class MainMenuActivity : AppCompatActivity() {
             val navController = rememberNavController()
 
             // 2️⃣ Pásalo al composable
-            MainMenuScreen(navController = navController)
+            MainMenuScreen(navController)
         }
     }
 }
