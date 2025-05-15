@@ -50,7 +50,7 @@ class GameView @JvmOverloads constructor(
     private val foodPaint = Paint()
     private val textPaint = Paint()
 
-    private val players = mutableMapOf<String, Player>()
+    val players = mutableMapOf<String, Player>()
     val foodItems = mutableListOf<Food>()
 
 
